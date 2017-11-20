@@ -1,0 +1,69 @@
+body{
+	background: #ccffcc;
+
+}
+
+.play_disp{
+	border: 6px solid #fc0;
+	border-radius: 10px;
+	margin: 30px 10px 10px;
+	background: #ffffcc;
+
+
+}
+
+p{
+	color: #a50;
+	font-size: 10px;
+	text-align: left;
+	background-color: #ffffe0;    
+	padding: 10px;
+	display: inline-block;
+	border: 3px solid #fc0;
+	border-radius: 10px;
+	font-family:"HGP創英角ﾎﾟｯﾌﾟ体";
+/*	margin-left: 10px;*/
+}
+
+h3{
+	color: #888;
+	font-family:"HGP創英角ﾎﾟｯﾌﾟ体";
+	margin-left: 10px;
+}
+
+/*
+.img_toro{
+	margin-right: auto;
+	width: 200px;
+	margin-top: 10px;
+
+}
+*/
+
+
+
+.room_name{
+	margin-left: 40px;
+	margin-bottom: 20px;
+
+}
+
+
+
+
+.slide{
+
+	max-width: 90%;
+/*	max-height: 100%;*/
+	border: 3px solid #fc0;
+	margin: 10px auto;
+}
+
+.select_div{
+	margin-bottom: 30px;
+}
+
+.upfile{
+	cursor:pointer;
+	
+}
