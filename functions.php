@@ -3,7 +3,7 @@
 
 //DB接続関数（PDO）
 function db_con(){
-  $dbname='gs_db_toro';//テーブル名
+  $dbname='presentation_db';//テーブル名
   try {
     $pdo = new PDO('mysql:dbname='.$dbname.';charset=utf8;host=localhost','root','');
 	  //xampはid:root,passは空

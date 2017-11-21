@@ -75,17 +75,16 @@ include("functions.php");
 		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="トロ画像" >
 		</div>
 		
-<!--		<div class=" btn-group-vertical btn-group-lg btn-block">-->
-<!--		  <button id="input_btn1" type="button" class="btn btn-warning btn-block" >①スライドUL</button>-->
-		  
-			<label for="upfile" >
-				<h2 id="btn"><span class="label label-warning upfile">①スライドUL</span></h2>
-			<!--<input type="file" id="upfile"  multiple style="display:none;" />-->
-			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 
-						</label>
-			
-		
+	
+<form method="post" action="insert.php" enctype="multipart/form-data">
+	<label for="upfile" >
+		<h2 id="btn"><span class="label label-warning upfile">①スライドUL</span></h2>
+		<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
+	</label>
+	 <input type="submit" value="送信">
+</form>
+
 	  
 		  <button id="input_btn2" type="button" class="btn btn-warning btn-block">②音声録音</button>
 		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">③再生</button>
@@ -143,6 +142,8 @@ $('#upfile').change(function(){
 	slide_ul_num++;
 	console.log(slide_ul_num);//同じファイルを連続ULするとカウントされない。
 	
+	//スライドデータ
+	let slide_data ='';
 	//スライドの枚数
 	let slide_num = this.files.length -1;
 	
@@ -160,10 +161,11 @@ $('#upfile').change(function(){
 		let reader = new FileReader();
 		reader.readAsDataURL(file);
 		reader.onload = function() {
-//		  $('#slide'+i+'>img').attr('src', reader.result );
+		//$('#slide'+i+'>img').attr('src', reader.result );
 
-		//何枚でもアップロードできるように改良↓↓
+		//何枚でもアップロードできるように変更
 		//スライド追加
+		slide_data += reader.result+"/";	
 		let slide_add = '';		
 		slide_add += '<div id="slide'+ i+'">';
 		slide_add += '<img src="'+reader.result+'" class="img-responsive img-rounded slide" alt="ULスライド'+i+'枚目" >';
@@ -175,7 +177,11 @@ $('#upfile').change(function(){
 			if(i == slide_num){
 				slider_add += '</div>';
 				$(".slide_area").append(slider_add);
-				$('.slider'+slide_ul_num).slick();  
+				$('.slider'+slide_ul_num).slick();
+//				console.log(slide_data);
+//				slide_ul(slide_data);
+				
+		
 			   }
 		}
 	}
@@ -203,6 +209,20 @@ $('#upfile').change(function(){
 //    return false;
 //}
 		
+function slide_ul(){
+
+	    $.ajax({
+        type: "POST",
+        url: "lesson_act.php",
+        data: { lesson:lesson },
+        datatype: "html",
+        success: function(data){
+				console.log("ことばをおしえる成功",data);
+				location.href = "home.php";
+			}
+		});
+}
+
 	
 </script>
 
