@@ -85,15 +85,15 @@ echo '<br>';
 $pdo = db_con();//functions.phpから呼び出し
 
 //３．SQLを作成(stmlの中で)
-$stmt = $pdo->prepare("INSERT INTO slide_table(id, slide_name, slide_num, slide_data,
-update)VALUES(NULL, :slide_name, :slide_num, :slide_data, sysdate() )");
+$stmt = $pdo->prepare("INSERT INTO slide_table(id, slide_name, slide_num, slide_data, create_date )VALUES(NULL, :slide_name, :slide_num, :slide_data, sysdate())");
 $stmt->bindValue(':slide_name', $slide_name, PDO::PARAM_STR); 
-$stmt->bindValue(':slide_num', count($file_name), PDO::PARAM_STR);
+$stmt->bindValue(':slide_num', count($file_name), PDO::PARAM_INT);
 $stmt->bindValue(':slide_data', $slide_data, PDO::PARAM_STR);
 $status = $stmt->execute();
 //実行後、エラーだったらfalseが返る
 //PDO::PARAM_STR 文字列なら追加(セキュリティ向上)
 //数値の場合はPDO::PARAM_INT
+//phpの予約語に注意★
 
 //４．エラー表示
 if($status==false){
@@ -104,10 +104,10 @@ if($status==false){
 	if(!isset($_SESSION["chk_ssid"]) || 
 	   $_SESSION["chk_ssid"] != session_id()
 	  ){
-		  header("Location: free_index.php");//スペース必須
+		  header("Location: home.php");//スペース必須
 		  exit;//おまじない
 	}else{
-		  header("Location: index.php");//スペース必須
+		  header("Location: home.php");//スペース必須
 		  exit;//おまじない
 	}
 	

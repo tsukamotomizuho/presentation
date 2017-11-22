@@ -5,6 +5,12 @@ session_start();
 include("functions.php");
 //ssidChk();//セッションチェック関数
 
+
+
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -187,7 +193,19 @@ $('#upfile').change(function(){
 	}
 	
 });
-	
+
+//スライドUL処理(ajaxバージョン)
+$("#search_btn").on("click",function(){
+    $.ajax({
+        type: "POST",
+        url: "insert.php",
+        data: { search:$("#search").val() },
+        datatype: "html",
+        success: function(data){
+        $("#view_table").html(data);
+        }
+    });
+});
 	
 	
 
