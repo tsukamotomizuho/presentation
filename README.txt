@@ -3,8 +3,8 @@
 1.スライド登録機能
 0)画面作成
 1)ファイルのアップロード
-2)DBに情報格納★着手中★(一旦：画像のパスをDBに保存、画像ファイルはlocalに保存)
-3)スライド表示
+2)DBに情報格納(ajaxで投げ方がわからないので保留⇒いったん画像名のみDBに保存、画像ファイルは/uploadフォルダに保存)
+3)スライド表示(DBから画像名取得、画像ファイルを/uploadフォルダから表示)★着手中★
 
 2.音声登録機能
 0)画面作成
@@ -20,6 +20,9 @@
 
 
 ----------------------------------------------------------------------------------
-・企画書のurl：https://www.dropbox.com/s/6kr9ua1esrsr3zq/idea_28_tsukamoto_r6.ppt?dl=0
-・ガントチャート：http://minna-de-gantt.com/gantt/main/?cid=Hf3wbfsWOC
+・企画書のurl(最新版)：
+  url: https://www.dropbox.com/s/6kr9ua1esrsr3zq/idea_28_tsukamoto_r6.ppt?dl=0
+
+・計画(ガントチャート)：
+  url: http://minna-de-gantt.com/gantt/main/?cid=Hf3wbfsWOC
 　パスワード：gs28
