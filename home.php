@@ -4,6 +4,7 @@ session_start();
 //0.外部ファイル読み込み
 include("functions.php");
 //ssidChk();//セッションチェック関数
+//$_SESSION["kanri_flg"] == 1 セッション関数
 
 
 //2. DB接続
@@ -16,11 +17,11 @@ $status = $stmt->execute();
 
 
 $view_slide = '<div class="slider">';//slider開始タグ
-$view_slide_data='';
-$view_slide_name='';
-$view_slide_id ='';
-$view_slide_num ='';
-$file_dir_path = "upload/";  //画像ファイル保管先
+$view_slide_id   = "なし";
+$view_slide_data ='';
+$view_slide_name ='';
+$view_slide_num  ='';
+$file_dir_path   = "upload/";  //画像ファイル保管先
 
 //４．エラー表示
 if($status==false){
@@ -31,7 +32,7 @@ if($status==false){
 
 		$view_slide_data .= $r["slide_data"];
 		$view_slide_name .= $r["slide_name"];
-		$view_slide_id   .= $r["slide_id"];
+		$view_slide_id   = $r["slide_id"];
 
 		//第1=ターゲット⽂字, 第2=元の⽂字列􀀁
 		$view_slide_data = explode("/" , $view_slide_data );
@@ -42,23 +43,7 @@ if($status==false){
 		}
 			$view_slide .= '</div>'; //slider終了タグ
 	}
-//		$view_table = "<tr><th>画像</th><th>登録日</th><th>書籍名</th><th></th></tr>".$view_table;
-	
-
-	
 }
-
-//権限チェック
-//$adminKind = '初期値';
-//if($_SESSION["kanri_flg"] == 1){
-//	$adminKind = "権限：システム管理者";
-//	
-//}else{
-//	$adminKind = "権限：社内担当";	
-//}
-
-
-
 
 
 ?>
@@ -122,11 +107,11 @@ if($status==false){
   <div class="row">
 	<div class="col-xs-4 col-sm-3 select_div" >
 		<div>
-	  		<div class="toro_area"><p>xxxさん</p></div>
+<!--	  		<div class="toro_area"><p>xxxさん</p></div>-->
 	  		
-		<!--<div class="alert alert-success">
+		<div class="alert alert-warning">
 		  <strong>xxxさん</strong> 
-		</div>-->
+		</div>
 
 		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="トロ画像" >
 		</div>
@@ -135,18 +120,21 @@ if($status==false){
 	
 <form method="post" action="insert.php" enctype="multipart/form-data">
 	<label for="upfile" >
-		<h2 id="btn"><span class="label label-warning upfile">①スライドUL</span></h2>
+		<h3><span class="label label-warning btn_effect">①スライドUL</span></h3>
 		<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 	</label>
-	 <input type="submit" value="保存">
+	<label for="save" >
+		<h3><span class="label label-warning btn_effect">②スライドをDB保存</span></h3>
+		<input id="save" type="submit" value="DB保存" style="display:none;" />
+	</label>
 </form>
 <!--★★ajax処理で送信する方法がわからない-->
 
 
 
 	  	  
-		  <button id="input_btn2" type="button" class="btn btn-warning btn-block">②音声録音</button>
-		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">③再生</button>
+		  <button id="input_btn2" type="button" class="btn btn-warning btn-block">③音声録音</button>
+		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">④再生</button>
 
 
 		
@@ -158,18 +146,23 @@ if($status==false){
 	<div class="col-xs-7 col-sm-8" >
 スライド　x/x枚目
 	<div class="slide_area">
-		<div class="slider">
+		<div class="sample_slide" >
+			<div class="slider">
 			<div class="sample"><img src="img/slide_sample.png" class="img-responsive img-rounded slide sample" alt="サンプル画像" ></div>
 			<div class="sample"><img src="img/slide_sample1.png" class="img-responsive img-rounded slide sample" alt="サンプル画像1" ></div>
 			<div id="slide2"><img src="img/slide_sample2.png" class="img-responsive img-rounded slide" alt="サンプル画像2" ></div>
 			<div id="slide3"><img  src="img/slide_sample3.png" class="img-responsive img-rounded slide" alt="サンプル画像3" ></div>
+			</div>
 		</div>
-
+	<div><?=$view_slide?></div>
 	</div>
+	
+<!--デバック用-->
+	<div>-------------------以下デバック用-------------</div>
 	<div><p>スライド名：</p><?=$view_slide_name?></div>
 	<div><p>スライドデータ：</p><?=var_dump($view_slide_data);?></div>
 	<div><p>スライドid：</p><?=$view_slide_id?></div>
-	<div><p>スライド画像：</p><?=$view_slide?></div>
+
 
 	
 	
@@ -188,7 +181,15 @@ if($status==false){
 
 
 <script>
+//★はまりポイント：javascriptでphpを呼び出す際は、以下のように''でくくること！！
+let db_slide_chk = '<?=$view_slide_id?>' ;
+console.log("DBのスライド有無チェック",db_slide_chk);
 
+if(db_slide_chk != 'なし'){
+   $('.sample_slide').remove();
+   }
+
+   
 $('.slider').slick();
 
 //アップロード回数
@@ -240,10 +241,8 @@ $('#upfile').change(function(){
 			//sliderのdivタグを閉じる＆新しくslick関数を動作させる
 			if(i == slide_num){
 				slider_add += '</div>';
-				$(".slide_area").append(slider_add);
+				$(".slide_area").prepend(slider_add);
 				$('.slider'+slide_ul_num).slick();
-//				console.log(slide_data);
-//				slide_ul(slide_data);
 				
 		
 			   }
