@@ -120,11 +120,11 @@ if($status==false){
 	
 <form method="post" action="insert.php" enctype="multipart/form-data">
 	<label for="upfile" >
-		<h3><span class="label label-warning btn_effect">①スライドUL</span></h3>
+		<h3><span class="label label-warning btn_effect">①スライドを画面に表示</span></h3>
 		<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 	</label>
 	<label for="save" >
-		<h3><span class="label label-warning btn_effect">②スライドをDB保存</span></h3>
+		<h3><span class="label label-warning btn_effect">②スライドをDBに登録</span></h3>
 		<input id="save" type="submit" value="DB保存" style="display:none;" />
 	</label>
 </form>
@@ -144,7 +144,7 @@ if($status==false){
    
 		
 	<div class="col-xs-7 col-sm-8" >
-スライド　x/x枚目
+スライド表示エリア　x/x枚目
 	<div class="slide_area">
 		<div class="sample_slide" >
 			<div class="slider">
