@@ -6,6 +6,56 @@ include("functions.php");
 //ssidChk();//セッションチェック関数
 
 
+//2. DB接続
+$pdo = db_con();
+
+//３．SQLを作成(ｓｔｍｌの中で)
+$stmt = $pdo->prepare("SELECT * FROM slide_table ORDER BY slide_id DESC  LIMIT 1");
+$status = $stmt->execute();
+//実行後、エラーだったらfalseが返る
+
+
+$view_slide = '<div class="slider">';//slider開始タグ
+$view_slide_data='';
+$view_slide_name='';
+$view_slide_id ='';
+$view_slide_num ='';
+$file_dir_path = "upload/";  //画像ファイル保管先
+
+//４．エラー表示
+if($status==false){
+	queryError($stmt);
+}else{//正常
+	while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+
+		$view_slide_data .= $r["slide_data"];
+		$view_slide_name .= $r["slide_name"];
+		$view_slide_id   .= $r["slide_id"];
+
+		//第1=ターゲット⽂字, 第2=元の⽂字列􀀁
+		$view_slide_data = explode("/" , $view_slide_data );
+
+		for ($i=1; $i < count($view_slide_data); $i++) {		
+			$view_slide .= '<div class="db_slide">';
+			$view_slide .= 	'<img src="'.$file_dir_path.$view_slide_data[$i].'" class="img-responsive img-rounded slide sample" alt="dbスライド" ></div>';
+		}
+			$view_slide .= '</div>'; //slider終了タグ
+	}
+//		$view_table = "<tr><th>画像</th><th>登録日</th><th>書籍名</th><th></th></tr>".$view_table;
+	
+
+	
+}
+
+//権限チェック
+//$adminKind = '初期値';
+//if($_SESSION["kanri_flg"] == 1){
+//	$adminKind = "権限：システム管理者";
+//	
+//}else{
+//	$adminKind = "権限：社内担当";	
+//}
 
 
 
@@ -88,13 +138,15 @@ include("functions.php");
 		<h2 id="btn"><span class="label label-warning upfile">①スライドUL</span></h2>
 		<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 	</label>
-	 <input type="submit" value="送信">
+	 <input type="submit" value="保存">
 </form>
+<!--★★ajax処理で送信する方法がわからない-->
 
-	  
+
+
+	  	  
 		  <button id="input_btn2" type="button" class="btn btn-warning btn-block">②音声録音</button>
 		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">③再生</button>
-<!--		</div>-->
 
 
 		
@@ -114,6 +166,12 @@ include("functions.php");
 		</div>
 
 	</div>
+	<div><p>スライド名：</p><?=$view_slide_name?></div>
+	<div><p>スライドデータ：</p><?=var_dump($view_slide_data);?></div>
+	<div><p>スライドid：</p><?=$view_slide_id?></div>
+	<div><p>スライド画像：</p><?=$view_slide?></div>
+
+	
 	
 	</div>
   </div>
@@ -194,18 +252,9 @@ $('#upfile').change(function(){
 	
 });
 
-//スライドUL処理(ajaxバージョン)
-$("#search_btn").on("click",function(){
-    $.ajax({
-        type: "POST",
-        url: "insert.php",
-        data: { search:$("#search").val() },
-        datatype: "html",
-        success: function(data){
-        $("#view_table").html(data);
-        }
-    });
-});
+	
+
+
 	
 	
 
