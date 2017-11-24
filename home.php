@@ -31,10 +31,13 @@ if($status==false){
 
 
 		$view_slide_data .= $r["slide_data"];
+		$view_slide_data_copy = $view_slide_data;
+		$view_slide_data_copy = str_replace("/", "★", $view_slide_data_copy );
+		
 		$view_slide_name .= $r["slide_name"];
 		$view_slide_id   = $r["slide_id"];
-
-		//第1=ターゲット⽂字, 第2=元の⽂字列􀀁
+		$view_slide_num  = $r["slide_num"];	
+		//第1=ターゲット, 第2=元の文字􀀁
 		$view_slide_data = explode("/" , $view_slide_data );
 
 		for ($i=1; $i < count($view_slide_data); $i++) {		
@@ -97,11 +100,9 @@ if($status==false){
 
 <div class="play_disp">
 <!--class="container" 中央ぞろえ-->
-  <div class="row">
-	<div class="room_name">
-<!--		<h1><span class="label label-success"><?=$_SESSION["player_name"]?>の部屋</span></h1>-->
-	</div>
-  </div>
+
+	<div class="room_name"></div>
+
 
 <div class="container">
   <div class="row">
@@ -113,27 +114,42 @@ if($status==false){
 		  <strong>xxxさん</strong> 
 		</div>
 
-		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="トロ画像" >
+		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="アイコンサンプル画像" >
 		</div>
 		
 
 	
-<form method="post" action="slide_insert.php" enctype="multipart/form-data">
-	<label for="upfile" >
-		<h3><span class="label label-warning btn_effect">①スライドUL</span></h3>
-		<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
-	</label>
-	<label for="save" >
-		<h3><span class="label label-warning btn_effect">②スライドをDB保存</span></h3>
-		<input id="save" type="submit" value="DB保存" style="display:none;" />
-	</label>
-</form>
-<!--★★ajax処理で送信する方法がわからない-->
+	<form method="post" action="slide_insert.php" enctype="multipart/form-data">
+		<label for="upfile" >
+			<h4><span class="label label-warning btn_effect">①スライドUL</span></h4>
+			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
+		</label>
+		<label for="save" >
+			<h4><span class="label label-warning btn_effect">②スライドをDB保存</span></h4>
+			<input id="save" type="submit" value="DB保存" style="display:none;" />
+		</label>
+	<!--★★ajax処理で送信に変更-->
+	<!--https://qiita.com/yasumodev/items/cffb735f46ffd489a4db-->
+	</form>
+		  
+	<label for="rec" >
+		<h4><span class="label label-warning btn_effect">③音声録音</span></h4>		  
+  		<button id="rec" onclick="startRecording(this);" style="display:none;">record</button>
+  	</label>
+ 
+ 	<label for="rec_stop" >
+ 		<h4><span class="label label-warning btn_effect">④録音停止</span></h4>		  
+  		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
+   	</label>
+   	
+   	  
+  <h5>Recordings</h5>
+  <div id="recordingslist"></div>
+  
+  <h5>Log</h5>
+  <div id="log"></div>
 
-
-
-	  	  
-		  <button id="input_btn2" type="button" class="btn btn-warning btn-block">③音声録音</button>
+	  
 		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">④再生</button>
 
 
@@ -144,7 +160,9 @@ if($status==false){
    
 		
 	<div class="col-xs-7 col-sm-8" >
-スライド　x/x枚目
+	<div class="alert alert-warning">
+		<div class="slick-counter">現在のスライド：<span class="current"></span> 枚目/ <span class="total"></span>枚中</div>
+	</div>
 	<div class="slide_area">
 		<div class="sample_slide" >
 			<div class="slider">
@@ -156,14 +174,6 @@ if($status==false){
 		</div>
 	<div><?=$view_slide?></div>
 	</div>
-	
-<!--デバック用-->
-	<div>-------------------以下デバック用-------------</div>
-	<div><p>スライド名：</p><?=$view_slide_name?></div>
-	<div><p>スライドデータ：</p><?=var_dump($view_slide_data);?></div>
-	<div><p>スライドid：</p><?=$view_slide_id?></div>
-
-
 	
 	
 	</div>
@@ -181,6 +191,16 @@ if($status==false){
 
 
 <script>
+//	デバッグ用
+	let view_slide_name ='<?=$view_slide_name?>';
+	let view_slide_data ='<?=$view_slide_data_copy?>';
+	let view_slide_id ='<?=$view_slide_id?>';
+	
+	console.log('スライド名',view_slide_name);	
+	console.log('スライドデータ',view_slide_data);	
+	console.log('スライドid',view_slide_id);	
+	
+//	スライドUL機能
 //★はまりポイント：javascriptでphpを呼び出す際は、以下のように''でくくること！！
 let db_slide_chk = '<?=$view_slide_id?>' ;
 console.log("DBのスライド有無チェック",db_slide_chk);
@@ -190,8 +210,26 @@ if(db_slide_chk != 'なし'){
    }
 
    
-$('.slider').slick();
-
+//スライド表示機能 （slick.jsを使用）
+	$(function() {
+		
+		//現在のスライド枚数表示処理
+	  $('.slider').on('init', function(event, slick) {
+		  	//			$(this).append('<div class="slick-counter"><span class="current"></span> / <span class="total"></span></div>');
+		  
+			$('.current').text(slick.currentSlide + 1);
+			$('.total').text(slick.slideCount);
+	  })
+		  .slick({
+			// option here...
+	  })
+		  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
+			$('.current').text(nextSlide + 1);
+		  console.log('現在のスライド数：',nextSlide + 1);
+		  //ここの値を使用して、音声データと保存に使用＆同期★//
+	  });
+	});
+	
 //アップロード回数
 let slide_ul_num = 0;
 	
@@ -256,17 +294,6 @@ $('#upfile').change(function(){
 
 	
 	
-
-//ボタン2押下
-		$("#input_btn2").on("click",function(){	
-			location.href = "talk.php";
-		});	
-
-
-//ボタン3押下
-		$("#input_btn3").on("click",function(){	
-			location.href = "note.php";
-		});
 	
 //function confirm() {
 //    if (window.confirm('これでよろしいですか？')) {
@@ -277,20 +304,113 @@ $('#upfile').change(function(){
 		
 function slide_ul(){
 
-	    $.ajax({
-        type: "POST",
-        url: "lesson_act.php",
-        data: { lesson:lesson },
-        datatype: "html",
-        success: function(data){
-				console.log("ことばをおしえる成功",data);
-				location.href = "home.php";
-			}
-		});
+//	    $.ajax({
+//        type: "POST",
+//        url: "lesson_act.php",
+//        data: { lesson:lesson },
+//        datatype: "html",
+//        success: function(data){
+//				console.log("ことばをおしえる成功",data);
+//				location.href = "home.php";
+//			}
+//		});
 }
 
-	
+
+
+		
+		
 </script>
 
+<script>
+//	音声録音機能
+	
+  function __log(e, data) {
+    log.innerHTML += "\n" + e + " " + (data || '');
+  }
+
+  var audio_context;
+  var recorder;
+
+  function startUserMedia(stream) {
+    var input = audio_context.createMediaStreamSource(stream);
+    __log('Media stream created.');
+
+    // Uncomment if you want the audio to feedback directly
+    //input.connect(audio_context.destination);
+    //__log('Input connected to audio context destination.');
+    
+	 //コンストラクタ
+    recorder = new Recorder(input);
+    __log('Recorder initialised.');
+  }
+
+	//録音開始
+  function startRecording(button) {
+    recorder && recorder.record();
+//    button.disabled = true;
+//    button.nextElementSibling.disabled = false;
+    __log('Recording...');
+  }
+
+	//録音停止
+  function stopRecording(button) {
+    recorder && recorder.stop();
+//    button.disabled = true;
+//    button.previousElementSibling.disabled = false;
+    __log('Stopped recording.');
+    
+    // create WAV download link using audio data blob
+    createDownloadLink();
+    
+    recorder.clear();
+  }
+
+  function createDownloadLink() {
+    recorder && recorder.exportWAV(function(blob) {
+	 //音声データ
+      var url = URL.createObjectURL(blob);
+	//タグ作成
+      var div = document.createElement('div');
+      var au = document.createElement('audio');
+      var hf = document.createElement('a');
+      
+	//audioタグ編集
+      au.controls = true;
+      au.src = url;
+	//aタグ(音声DL)編集
+      hf.href = url;
+      hf.download = new Date().toISOString() + '.wav';
+      hf.innerHTML = hf.download;
+	//html挿入
+      div.appendChild(au);
+      div.appendChild(hf);
+      recordingslist.appendChild(div);
+    });
+  }
+
+	  //サポートチェック、マイクチェック？
+  window.onload = function init() {
+    try {
+      // webkit shim
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+      window.URL = window.URL || window.webkitURL;
+      
+      audio_context = new AudioContext;
+      __log('Audio context set up.');
+      __log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+    } catch (e) {
+      alert('No web audio support in this browser!');
+    }
+    
+    navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+      __log('No live audio input: ' + e);
+    });
+  };
+  </script>
+  
+<!--recorder.js 音声録音ライブラリ読み込み-->
+ <script src="Recorderjs-master/dist/recorder.js"></script>
 </body>
 </html>
