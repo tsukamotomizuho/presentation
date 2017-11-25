@@ -10,7 +10,7 @@ include("functions.php");
 //2. DB接続
 $pdo = db_con();
 
-//３．SQLを作成(ｓｔｍｌの中で)
+//３．SQLを作成(スライド取得)
 $stmt = $pdo->prepare("SELECT * FROM slide_table ORDER BY slide_id DESC  LIMIT 1");
 $status = $stmt->execute();
 //実行後、エラーだったらfalseが返る
@@ -47,7 +47,6 @@ if($status==false){
 			$view_slide .= '</div>'; //slider終了タグ
 	}
 }
-
 
 ?>
 
@@ -138,7 +137,7 @@ if($status==false){
   	</label>
  
  	<label for="rec_stop" >
- 		<h4><span class="label label-info btn_effect">④録音停止</span></h4>		  
+ 		<h4><span class="label label-info btn_effect">④録音停止(ajax)</span></h4>		  
   		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
    	</label>
    	
@@ -211,7 +210,7 @@ if($status==false){
 	console.log('スライドid',view_slide_id);
 	
 
-//メモ：javascriptでphpを呼び出す際は、以下のように''でくくること！！
+	//メモ：javascriptでphpを呼び出す際は、以下のように''でくくること！！
 	let db_slide_chk = '<?=$view_slide_id?>' ;
 	console.log("DBのスライド有無チェック",db_slide_chk);
 
@@ -222,14 +221,13 @@ if($status==false){
 
    
 //スライド表示機能 （slick.jsを使用）
-	let slide_now_num ='1';//現在のスライド番号
+
+	let slide_now_num ='1';//現在のスライド番号(デフォルト)
 	
 	$(function() {
 		
-		//現在のスライド枚数表示処理
+		//現在のスライド枚数表示処理＋audioタグ切替処理
 	  $('.slider').on('init', function(event, slick) {
-		  	//			$(this).append('<div class="slick-counter"><span class="current"></span> / <span class="total"></span></div>');
-		  
 			$('.current').text(slick.currentSlide + 1);
 			$('.total').text(slick.slideCount);
 	  })
@@ -239,10 +237,21 @@ if($status==false){
 		  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
 			$('.current').text(nextSlide + 1);
 		  slide_now_num = nextSlide + 1;
-		  console.log('現在のスライド数：',slide_now_num);
+		  console.log('現在のスライド番号：',slide_now_num);
+		  //現在のスライド番号を使用して、音声データと保存に使用＆同期
 		  
-		  //ここの値を使用して、音声データと保存に使用＆同期
-		  
+		//audioタグ切替処理処理★★切り替えができない？なぜ？★★
+		 for (let i = 1; i <= slick.slideCount; i++){
+			 if(slide_now_num == i){
+				 $('#slide_now_num_'+slide_now_num).show(0);
+				 		  console.log('表示：',i);
+				}else{
+					$('#slide_now_num_'+slide_now_num).hide(0);
+					
+						console.log('非表示：',i);
+				}
+
+		 }		  
 	  });
 	});
 	
@@ -309,14 +318,7 @@ $('#upfile').change(function(){
 
 
 	
-	
-	
-//function confirm() {
-//    if (window.confirm('これでよろしいですか？')) {
-//        return true;
-//    }
-//    return false;
-//}
+
 		
 function slide_ul(){
 
@@ -397,11 +399,16 @@ function slide_ul(){
       var au = document.createElement('audio');
       var hf = document.createElement('a');
 
-	//旧divタグ(旧音声)削除 ※表示のみ。データは残る。php側で処理★
+	//旧divタグ(旧音声)削除 
+	//※表示のみ。データは残る。あとでphp側で処理要★
 	 $('#slide_now_num_'+slide_now_num).remove();
+
 	//divタグ編集
 	div.id = 'slide_now_num_'+slide_now_num;
+	div.style ="display: block;";
 	div.innerHTML = 'スライド'+slide_now_num+'枚目の音声';
+
+		
 	//audioタグ編集
       au.controls = true;
       au.src = url;
@@ -445,7 +452,8 @@ function voice_ul(soundBlob){
 	fd.append('sound_blob', soundBlob);//$postで確認
 	fd.append('file_name', 'slide'+slide_now_num+'_voice.wav');//$postで確認
 	fd.append('slide_name', '<?=$view_slide_name?>');//$postで確認
-
+	fd.append('slide_id', '<?=$view_slide_id?>');//$postで確認
+	
 	fd.append('slide_now_num', slide_now_num);//$fileで確認
 	
 	$.ajax({
@@ -455,7 +463,8 @@ function voice_ul(soundBlob){
 		processData: false,
 		contentType: false,
 		success: function(data){
-        console.log(data);}
+//        console.log(data);
+		console.log('音声登録成功'); }
 	});
 		
 
