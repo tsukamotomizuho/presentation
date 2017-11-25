@@ -125,7 +125,7 @@ if($status==false){
 			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 		</label>
 		<label for="save" >
-			<h4><span class="label label-warning btn_effect">②スライドをDB保存</span></h4>
+			<h4><span class="label label-warning btn_effect">②スライドをDB登録</span></h4>
 			<input id="save" type="submit" value="DB保存" style="display:none;" />
 		</label>
 	<!--★★ajax処理で送信に変更-->
@@ -133,12 +133,12 @@ if($status==false){
 	</form>
 		  
 	<label for="rec" >
-		<h4><span class="label label-warning btn_effect">③音声録音</span></h4>		  
+		<h4><span class="label label-info btn_effect">③音声録音</span></h4>		  
   		<button id="rec" onclick="startRecording(this);" style="display:none;">record</button>
   	</label>
  
  	<label for="rec_stop" >
- 		<h4><span class="label label-warning btn_effect">④録音停止</span></h4>		  
+ 		<h4><span class="label label-info btn_effect">④録音停止</span></h4>		  
   		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
    	</label>
    	
@@ -149,8 +149,15 @@ if($status==false){
   <h5>Log</h5>
   <div id="log"></div>
 
-	  
-		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">④再生</button>
+ 	<label for="voice_save" >
+ 		<h4><span class="label label-info btn_effect">⑤音声をDB登録</span></h4>		  
+  		<button id="voice_save" onclick="stopRecording(this);"  style="display:none;">stop</button>
+   	</label>
+ 
+<p>テスト　audioタグ</p>
+<!--<audio controls="" src="blob:http://localhost/8a5a2b22-7cf8-4da1-8bff-5710c708e143"></audio>-->
+
+		  		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">④再生</button>
 
 
 		
@@ -161,6 +168,7 @@ if($status==false){
 		
 	<div class="col-xs-7 col-sm-8" >
 	<div class="alert alert-warning">
+		<div id="slide_name">スライド名：</div>
 		<div class="slick-counter">現在のスライド：<span class="current"></span> 枚目/ <span class="total"></span>枚中</div>
 	</div>
 	<div class="slide_area">
@@ -191,26 +199,31 @@ if($status==false){
 
 
 <script>
-//	デバッグ用
+//	スライドUL機能
+	
+//	スライドデバッグ用
 	let view_slide_name ='<?=$view_slide_name?>';
 	let view_slide_data ='<?=$view_slide_data_copy?>';
 	let view_slide_id ='<?=$view_slide_id?>';
-	
-	console.log('スライド名',view_slide_name);	
-	console.log('スライドデータ',view_slide_data);	
-	console.log('スライドid',view_slide_id);	
-	
-//	スライドUL機能
-//★はまりポイント：javascriptでphpを呼び出す際は、以下のように''でくくること！！
-let db_slide_chk = '<?=$view_slide_id?>' ;
-console.log("DBのスライド有無チェック",db_slide_chk);
 
-if(db_slide_chk != 'なし'){
-   $('.sample_slide').remove();
-   }
+	console.log('スライド名',view_slide_name);
+	console.log('スライドデータ',view_slide_data);
+	console.log('スライドid',view_slide_id);
+	
+
+//メモ：javascriptでphpを呼び出す際は、以下のように''でくくること！！
+	let db_slide_chk = '<?=$view_slide_id?>' ;
+	console.log("DBのスライド有無チェック",db_slide_chk);
+
+	if(db_slide_chk != 'なし'){
+	   $('.sample_slide').remove();
+	   $('#slide_name').append('<?=$view_slide_name?>');
+	   }
 
    
 //スライド表示機能 （slick.jsを使用）
+	let slide_now_num ='1';//現在のスライド番号
+	
 	$(function() {
 		
 		//現在のスライド枚数表示処理
@@ -225,8 +238,11 @@ if(db_slide_chk != 'なし'){
 	  })
 		  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
 			$('.current').text(nextSlide + 1);
-		  console.log('現在のスライド数：',nextSlide + 1);
-		  //ここの値を使用して、音声データと保存に使用＆同期★//
+		  slide_now_num = nextSlide + 1;
+		  console.log('現在のスライド数：',slide_now_num);
+		  
+		  //ここの値を使用して、音声データと保存に使用＆同期
+		  
 	  });
 	});
 	
@@ -364,24 +380,38 @@ function slide_ul(){
     createDownloadLink();
     
     recorder.clear();
+	  
+	  
   }
 
   function createDownloadLink() {
     recorder && recorder.exportWAV(function(blob) {
-	 //音声データ
+	
+	console.log('音声データ：',blob);
+	voice_ul(blob);
+		
+	 //音声データを仮想urlに変換(セッション内のみ有効)
       var url = URL.createObjectURL(blob);
 	//タグ作成
       var div = document.createElement('div');
       var au = document.createElement('audio');
       var hf = document.createElement('a');
-      
+
+	//旧divタグ(旧音声)削除 ※表示のみ。データは残る。php側で処理★
+	 $('#slide_now_num_'+slide_now_num).remove();
+	//divタグ編集
+	div.id = 'slide_now_num_'+slide_now_num;
+	div.innerHTML = 'スライド'+slide_now_num+'枚目の音声';
 	//audioタグ編集
       au.controls = true;
       au.src = url;
 	//aタグ(音声DL)編集
       hf.href = url;
+		//ダウンロード属性
       hf.download = new Date().toISOString() + '.wav';
       hf.innerHTML = hf.download;
+		console.log('url：',url);
+		console.log(hf.download);
 	//html挿入
       div.appendChild(au);
       div.appendChild(hf);
@@ -408,6 +438,30 @@ function slide_ul(){
       __log('No live audio input: ' + e);
     });
   };
+	
+function voice_ul(soundBlob){
+
+	var fd = new FormData();
+	fd.append('sound_blob', soundBlob);//$postで確認
+	fd.append('file_name', 'slide'+slide_now_num+'_voice.wav');//$postで確認
+	fd.append('slide_name', '<?=$view_slide_name?>');//$postで確認
+
+	fd.append('slide_now_num', slide_now_num);//$fileで確認
+	
+	$.ajax({
+		type: 'POST',
+		url: 'voice_insert.php',
+		data: fd,
+		processData: false,
+		contentType: false,
+		success: function(data){
+        console.log(data);}
+	});
+		
+
+
+}
+	
   </script>
   
 <!--recorder.js 音声録音ライブラリ読み込み-->
