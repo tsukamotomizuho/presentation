@@ -55,37 +55,65 @@ if($status==false){
 	$view_voice_copy=''; //デバック用
 
 for($i=1; $i <= $view_slide_num; $i++){
-	$voice_table_sql = 'SELECT * FROM voice_table WHERE slide_id ='.$view_slide_id.' AND slide_now_num ='.$i.' ORDER BY voice_id DESC LIMIT 1';
+		
+		//sqlのselect実行結果(件数)確認用
+		$sql = 'SELECT COUNT(*) FROM voice_table WHERE slide_id ='.$view_slide_id.' AND slide_now_num ='.$i;
+	
+		$res = $pdo->prepare($sql);
+		$status1 = $res->execute();
+		
+		//sqlのselect実行文
+		$voice_table_sql = 'SELECT * FROM voice_table WHERE slide_id ='.$view_slide_id.' AND slide_now_num ='.$i.' ORDER BY voice_id DESC LIMIT 1';
 
-	$stmt = $pdo->prepare($voice_table_sql);
-	$status = $stmt->execute();
-	//実行後、エラーだったらfalseが返る
+		$stmt = $pdo->prepare($voice_table_sql);
+		$status2 = $stmt->execute();
+		//実行後、エラーだったらfalseが返る
+	
 
-//音声タグ作成
-	$view_slide_now_num ='';
-	$view_voice_data    ='';
-	$file_dir_path      = "upload_voice/";//音声ファイル保管先
+	//音声タグ作成
+		$view_slide_now_num ='';
+		$view_voice_data    ='';
+	
+ if ($status1) {
 
-//6．audioタグ or エラー表示
-	if($status==false){
-		queryError($stmt);
+  /* SELECT 文にマッチする行数をチェックする */
+  if ($res->fetchColumn() > 0) {
+	  //echo 'スライド'.$i.'番目はデータあり★';
+
+	if($status2==false){
+			queryError($stmt);
 	}else{//正常
-		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
 
-			$view_voice_id      = $r["voice_id"];
-			$view_slide_now_num = $r["slide_now_num"];
-			$view_voice_data    = $r["voice_data"];
-			$view_voice_copy    .= $r["voice_data"].'/';
+	  
+	  while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+				$view_voice_id      = $r["voice_id"];
+				$view_slide_now_num = $r["slide_now_num"];
+				$view_voice_data    = $r["voice_data"];
+				$view_voice_copy    .= $r["voice_data"].'/';
+				
+
+				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'">';//開始タグ
+				$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
+				$view_voice .= '<audio controls="" src=""></audio>';
+				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
+				$view_voice .= '</div>';//終了タグ
+
+				
+			}
+		}  
+	  
+    }
+    /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
+  else {
+	  //echo 'スライド'.$i.'番目はデータなし★';
+	  $view_voice_copy    .= $r["voice_data"].'/';
+    }
+}
+	
+	
 
 
-			$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'">';//開始タグ
-			$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
-			$view_voice .= '<audio controls="" src=""></audio>';
-			$view_voice .= '<a href="#" download="">音声ファイル名</a>';
-			$view_voice .= '</div>';//終了タグ
-			
-		}
-	}
 }
 ?>
 
@@ -233,36 +261,40 @@ for($i=1; $i <= $view_slide_num; $i++){
 let slide_now_num ='';//現在のスライド番号
 let slide_num ='';//スライド総数
 	
-	//スライドデバッグ用
-		let view_slide_name ='<?=$view_slide_name?>';
-		let view_slide_data ='<?=$view_slide_data_copy?>';
-		let view_slide_id ='<?=$view_slide_id?>';
-	
-		console.log('スライド名',view_slide_name);
-		console.log('スライドデータ',view_slide_data);
-		console.log('スライドid',view_slide_id);
-	
 
 	//DBのスライド有無チェック
 	//メモ：javascriptでphpを呼び出す際は、''でくくる
-	let db_slide_chk = '<?=$view_slide_id?>' ;
-	console.log("DBのスライド有無チェック",db_slide_chk);
+	let view_slide_id ='<?=$view_slide_id?>';
+	console.log("DBのスライド有無チェック",view_slide_id);
 
-	if(db_slide_chk != 'なし'){
+	if(view_slide_id != 'なし'){
+		//スライドデバッグ用
+		let view_slide_name ='<?=$view_slide_name?>';
+		let view_slide_data ='<?=$view_slide_data_copy?>';
+		let view_slide_num = '<?=$view_slide_num?>';
+		console.log('スライド名',view_slide_name);
+		console.log('スライドデータ',view_slide_data);
+		console.log('スライドid',view_slide_id);
+		console.log('スライド総数',view_slide_num);
+
 	   $('.sample_slide').remove();
 	   $('#slide_name').append('<?=$view_slide_name?>');
+		
+		slide_num = view_slide_num;
+		
 	   }
 
    
 //スライド表示機能 （slick.jsを使用）
 	
-	$(function() {
+	$(function () {
+	
 	  //現在のスライド枚数表示処理
 	  $('.slider').on('init', function(event, slick) {
 			$('.current').text(slick.currentSlide + 1);
 			$('.total').text(slick.slideCount);
 		  
-		  	slide_num =slick.slideCount;//スライド総数
+		  	slide_num = slick.slideCount;//スライド総数
 			slide_now_num =slick.currentSlide + 1;//現在のスライド番号
 	  })
 		  .slick({
@@ -296,7 +328,7 @@ let slide_ul_num = 0;
 $('#upfile').change(function(){
 	$('.slider').remove();//サンプル削除
 
-	//前回ULしたスライド削除   
+	//前回ULしたスライドorサンプルスライド削除   
 	if(slide_ul_num > 0){
 		$('.slider'+slide_ul_num).remove();
 	}
@@ -324,27 +356,39 @@ $('#upfile').change(function(){
 		let reader = new FileReader();
 		reader.readAsDataURL(file);
 		reader.onload = function() {
-		//$('#slide'+i+'>img').attr('src', reader.result );
 
-		//何枚でもアップロードできるように変更
-		//スライド追加
-		slide_data += reader.result+"/";	
-		let slide_add = '';		
-		slide_add += '<div id="slide'+ i+'">';
-		slide_add += '<img src="'+reader.result+'" class="img-responsive img-rounded slide" alt="ULスライド'+i+'枚目" >';
-		slide_add += '</div>'; 
-		slider_add += slide_add;
+			//何枚でもアップロードできるように変更
+			//スライド追加
+			slide_data += reader.result+"/";	
+			let slide_add = '';		
+			slide_add += '<div id="slide'+ i+'">';
+			slide_add += '<img src="'+reader.result+'" class="img-responsive img-rounded slide" alt="ULスライド'+i+'枚目" >';
+			slide_add += '</div>'; 
+			slider_add += slide_add;
 
-			//スライドがすべてULされたとき
-			//sliderのdivタグを閉じる＆新しくslick関数を動作させる
+			//スライドがすべてULされたときの処理
 			if(i == new_slide_num){
-				slider_add += '</div>';
+				//新しいsliderタグの挿入
+				slider_add += '</div>';//slider終了タグ
 				$(".slide_area").prepend(slider_add);
-				$('.slider'+slide_ul_num).slick();
-				
-		
-			   }
-		}
+				//前回の音声削除
+				$("#recordingslist>div").remove();
+				//新しくslick関数を動作させる
+				$('.slider'+slide_ul_num).on('init', function(event, slick) {
+			$('.current').text(slick.currentSlide + 1);
+			$('.total').text(slick.slideCount);
+
+			  })
+				  .slick({
+					// option here...
+			  })
+				  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
+							$('.current').text(nextSlide + 1);
+							slide_now_num = nextSlide + 1;
+							console.log('現在のスライド番号：',slide_now_num);
+					  });
+			}
+	  	}
 	}
 	
 });
@@ -355,38 +399,35 @@ $('#upfile').change(function(){
 //グローバル変数
 	
 	//音声データファイル名
-		let view_voice_data ='<?=$view_voice_copy?>';
-		console.log('取得した音声データ：');
-		console.log(view_voice_data);
-		let voice_data_split = view_voice_data.split('/');
-		console.log(voice_data_split);
+	let view_voice_data ='<?=$view_voice_copy?>';
+	console.log('取得した音声データ：');
+	console.log(view_voice_data);
+	let voice_data_split = view_voice_data.split('/');
+	console.log(voice_data_split);
 	
 	
 	//DBの音声の有無チェック＆DB取得音声を表示
 	let db_voice_chk = '<?=$view_voice_id?>' ;
-	console.log("DBの音声有無チェック",db_voice_chk);
+	console.log("DBの音声有無チェック(voice_id)",db_voice_chk);
 
 	if(db_voice_chk != 'なし'){
 		
-	//1)phpで作成したタグを挿入
-	$('#recordingslist').append('<?=$view_voice?>');
-	
-	//2)タグに情報を追記
-//	for (let y = 1; y <= slide_num ; y++) ){
-//
-//		 //音声データを仮想urlに変換(セッション内のみ有効)
-//		  let voice_data_path = 'upload_voice/'+voice_data_split[y];
-//		
-//		//音声データをローカルからどうやって取得するかわからない？★★ここから！！
-//		
-//		  var url = URL.createObjectURL(blob);
-//
-//		   $('#slide_now_num_'+y audio).attr({
-//			  'src': xxx
-//		   });
-//	   
-//
-//		}
+		//1)phpで作成したタグを挿入
+		$('#recordingslist').append('<?=$view_voice?>');
+		console.log("slide_num：",slide_num);
+		
+		//2)タグに情報を追記
+		for (let y = 0; y < slide_num ; y++){
+				
+			// divタグ用番号
+			let div_slide_now_num = y+1;
+			//音声データ格納先
+			let voice_data_path = 'upload_sound/'+voice_data_split[y];
+			
+			console.log('スライド番号：',div_slide_now_num,'、voice_data_path：',voice_data_path);
+			//var url = URL.createObjectURL(blob);
+			$('#slide_now_num_'+div_slide_now_num+'>audio').attr('src', voice_data_path);
+			}
 			
 	   }
 	
