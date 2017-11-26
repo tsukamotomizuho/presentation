@@ -30,15 +30,13 @@ if(
 	//スライド名
 	$slide_id=$_POST["slide_id"];
 
- echo $file_name;
- echo '　　'+$slide_now_num;
- echo '　　'+$slide_name;
- echo '　　'+$slide_id;
+ echo '　　スライド番号：'.$slide_now_num;
+ echo '　　スライド名：'.$slide_name;
+ echo '　　スライドID：'.$slide_id;
 
 //Fileアップロードチェック
 if (isset($_FILES["sound_blob"])) {
 
-//ここから★★！！
 	$sound_data ='';
 	
 	//アップロード先のTempフォルダ	
@@ -49,8 +47,9 @@ if (isset($_FILES["sound_blob"])) {
 
     //***File名の変更***(ユニークファイル名)
     $extension = pathinfo($file_name, PATHINFO_EXTENSION); //拡張子取得(.wav)
-    $file_name = date("YmdHis")."_".$slide_name."_slide".$slide_now_num."_" .md5(session_id()) . "." . $extension;  //ユニークファイル名作成//md5：暗号化
+    $file_name = date("YmdHis")."_slide_id".$slide_id."_slide_num".$slide_now_num."_" .md5(session_id()) . "." . $extension;  //ユニークファイル名作成//md5：暗号化
 
+	echo '　　音声ファイル名：'.$file_name;
 	
     $img="";  //画像表示orError文字を保持する変数
 		
@@ -79,30 +78,33 @@ $pdo = db_con();//functions.phpから呼び出し
 //３．SQLを作成(stmlの中で)
 $stmt = $pdo->prepare("INSERT INTO voice_table(voice_id, slide_id, slide_now_num, voice_data, create_date )VALUES(NULL, :slide_id, :slide_now_num, :voice_data, sysdate())");
 $stmt->bindValue(':slide_id', $slide_id, PDO::PARAM_INT); 
-$stmt->bindValue(':slide_now_num', count($slide_now_num), PDO::PARAM_INT);
+$stmt->bindValue(':slide_now_num', $slide_now_num, PDO::PARAM_INT);
 $stmt->bindValue(':voice_data', $file_name, PDO::PARAM_STR);
 $status = $stmt->execute();
+
 //実行後、エラーだったらfalseが返る
 //PDO::PARAM_STR 文字列なら追加(セキュリティ向上)
 //数値の場合はPDO::PARAM_INT
 //phpの予約語に注意★
 
-//４．エラー表示
+echo '　　SQLステータス：'.$status;
+
 if($status==false){
 	queryError($stmt);
-  
-}else{//処理が終われば『index.php』に戻る。
-	
-	if(!isset($_SESSION["chk_ssid"]) || 
-	   $_SESSION["chk_ssid"] != session_id()
-	  ){
-		  header("Location: home.php");//スペース必須
-		  exit;//おまじない
-	}else{
-		  header("Location: home.php");//スペース必須
-		  exit;//おまじない
-	}
-}	
+}
+
+//ポイント：ajaxの場合、header("Location～は不要
+//else{	
+//	if(!isset($_SESSION["chk_ssid"]) || 
+//	   $_SESSION["chk_ssid"] != session_id()
+//	  ){
+//		  header("Location: home.php");//スペース必須
+//		  exit;//おまじない
+//	}else{
+//		  header("Location: home.php");//スペース必須
+//		  exit;//おまじない
+//	}
+//}	
 
 
 ?>
