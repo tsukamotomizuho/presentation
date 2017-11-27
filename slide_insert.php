@@ -23,6 +23,7 @@ include("functions.php");
 //
 
 
+echo var_dump($_FILES);
 
 //Fileアップロードチェック
 if (isset($_FILES["upfile"])) {
@@ -85,19 +86,24 @@ $status = $stmt->execute();
 //４．エラー表示
 if($status==false){
 	queryError($stmt);
-  
-}else{//処理が終われば『index.php』に戻る。
-	
-	if(!isset($_SESSION["chk_ssid"]) || 
-	   $_SESSION["chk_ssid"] != session_id()
-	  ){
-		  header("Location: home.php");//スペース必須
-		  exit;//おまじない
-	}else{
-		  header("Location: home.php");//スペース必須
-		  exit;//おまじない
-	}
-	
-
 }
+
+//ajax処理のため、以下は不要
+//if($status==false){
+//	queryError($stmt);
+//  
+//}else{//処理が終われば『index.php』に戻る。
+//	
+//	if(!isset($_SESSION["chk_ssid"]) || 
+//	   $_SESSION["chk_ssid"] != session_id()
+//	  ){
+//		  header("Location: home.php");//スペース必須
+//		  exit;//おまじない
+//	}else{
+//		  header("Location: home.php");//スペース必須
+//		  exit;//おまじない
+//	}
+//	
+//
+//}
 ?>

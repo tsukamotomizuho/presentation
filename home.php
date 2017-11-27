@@ -78,7 +78,6 @@ for($i=1; $i <= $view_slide_num; $i++){
 
   /* SELECT 文にマッチする行数をチェックする */
   if ($res->fetchColumn() > 0) {
-	  //echo 'スライド'.$i.'番目はデータあり★';
 
 	if($status2==false){
 			queryError($stmt);
@@ -96,7 +95,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'">';//開始タグ
 				$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
 				$view_voice .= '<audio controls="" src=""></audio>';
-				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
+//				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
 				$view_voice .= '</div>';//終了タグ
 
 				
@@ -106,7 +105,6 @@ for($i=1; $i <= $view_slide_num; $i++){
     }
     /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
   else {
-	  //echo 'スライド'.$i.'番目はデータなし★';
 	  $view_voice_copy    .= $r["voice_data"].'/';
     }
 }
@@ -132,29 +130,21 @@ for($i=1; $i <= $view_slide_num; $i++){
 	<script src="js/bootstrap.min.js"></script>
 <!--bootstrap3-->
 
-
 <!--slick-->
 	<link rel="stylesheet" href="slick-1.8.0/slick/slick.css">
 	<link rel="stylesheet" href="slick-1.8.0/slick/slick-theme.css">
 	<script src="slick-1.8.0/slick/slick.min.js"></script>
 <!--slick-->
  
-
- 
   <title>home</title>
-	
 </head>
+
 <body>
-
-
-
-
 
 <!-- Head[Start] -->
 <header>
 <nav class="navbar navbar-default">
 	<h3>スライド作成画面</h3>
-<!--		<a class="navbar-brand" href="logout.php">スライド作成画面</a>-->
 </nav>
 
 </header>
@@ -162,8 +152,6 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 
 <!-- Main[Start] -->
-
-
 <div class="play_disp">
 <!--class="container" 中央ぞろえ-->
 
@@ -183,18 +171,20 @@ for($i=1; $i <= $view_slide_num; $i++){
 		
 
 	
-	<form method="post" action="slide_insert.php" enctype="multipart/form-data">
+	<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="upfile" >
 			<h4><span class="label label-warning btn_effect">①スライドUL</span></h4>
 			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 		</label>
 		<label for="save" >
-			<h4><span class="label label-warning btn_effect">②スライドをDB登録</span></h4>
-			<input id="save" type="submit" value="DB保存" style="display:none;" />
+			<h4><span class="label label-warning btn_effect">②スライドをDB登録(ajax)</span></h4>
+			<button type="button" id="save" onclick="slide_ul()" style="display:none;"></button>
 		</label>
+	</form>
+
 	<!--★★ajax処理で送信に変更-->
 	<!--https://qiita.com/yasumodev/items/cffb735f46ffd489a4db-->
-	</form>
+
 		  
 	<label for="rec" >
 		<h4><span class="label label-info btn_effect">③音声録音</span></h4>		  
@@ -205,21 +195,24 @@ for($i=1; $i <= $view_slide_num; $i++){
  		<h4><span class="label label-info btn_effect">④録音停止(ajax)</span></h4>		  
   		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
    	</label>
-   	
-   	  
-  <h5>Recordings</h5>
+ 
+<!--
+ 	<label for="rec_stop" >
+ 		<h4><span class="label label-info btn_effect">⑤音声DB登録(ajax)</span></h4>		  
+  		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
+   	</label>
+-->
+   	  	  
+  <h5>Recordings status</h5>
+  <div id="log"></div>   	
   <div id="recordingslist"></div>
   
-  <h5>Log</h5>
-  <div id="log"></div>
 
- 	<label for="voice_save" >
- 		<h4><span class="label label-info btn_effect">⑤音声をDB登録</span></h4>		  
-  		<button id="voice_save" onclick="stopRecording(this);"  style="display:none;">stop</button>
+
+ 	<label for="all_play" >
+ 		<h4><span class="label label-success btn_effect">⑥自動再生</span></h4>		  
+<!--  		<button id="all_play" onclick=";"  style="display:none;">stop</button>-->
    	</label>
-
-
-		  		  <button id="input_btn3" type="button" class="btn btn-warning btn-block">④再生</button>
 
 
 	</div>
@@ -323,6 +316,9 @@ let slide_num ='';//スライド総数
 	
 //アップロード回数
 let slide_ul_num = 0;
+//スライドデータ(DB登録用)
+let	slide_data_ul;
+
 	
 //①ファイルUL押下
 $('#upfile').change(function(){
@@ -335,8 +331,12 @@ $('#upfile').change(function(){
 	
 	slide_ul_num++;
 	console.log(slide_ul_num);//同じファイルを連続ULするとカウントされない。
+
+	//スライドデータ(DB登録用)
+	console.log('this.files',this.files);
+	slide_data_ul = this.files;
 	
-	//スライドデータ
+	//スライドデータ(html表示用)
 	let slide_data ='';
 	
 	//ULするスライドの枚数
@@ -393,8 +393,37 @@ $('#upfile').change(function(){
 	
 });
 
+//②スライドをDB登録ボタン押下
+		$("#save").on("click",function(){
 
-//②音声録音機能-----------------------------------
+			slide_ul();
+		});	
+	
+function slide_ul(){
+//slide_data_ul
+	//送信データ作成
+//	var fd = new FormData();
+//		//$fileで確認
+//		fd.append('upfile', slide_data_ul);
+
+ var fd = new FormData($('#upfile_form').get(0));
+	
+	$.ajax({
+		type: 'POST',
+		url: 'slide_insert.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+       console.log(data);
+	console.log('スライド登録成功');
+	});
+
+
+}
+	
+	
+//③音声録音機能-----------------------------------
 
 //グローバル変数
 	
@@ -434,7 +463,7 @@ $('#upfile').change(function(){
 	
   function __log(e, data) {
 	  console.log('音声ログ：',e,'  ',data || '');
-      log.innerHTML += "\n" + e + " " + (data || '');
+      log.innerHTML = "\n" + e + " " + (data || '');
   }
 
   var audio_context;
@@ -442,7 +471,7 @@ $('#upfile').change(function(){
 
   function startUserMedia(stream) {
     var input = audio_context.createMediaStreamSource(stream);
-    __log('Media stream created.');
+//    __log('Media stream created.');
 
     // Uncomment if you want the audio to feedback directly
     //input.connect(audio_context.destination);
@@ -450,7 +479,7 @@ $('#upfile').change(function(){
     
 	 //コンストラクタ
     recorder = new Recorder(input);
-    __log('Recorder initialised.');
+//    __log('Recorder initialised.');
   }
 
 	//録音開始
