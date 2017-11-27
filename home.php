@@ -92,7 +92,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 				$view_voice_copy    .= $r["voice_data"].'/';
 				
 
-				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'">';//開始タグ
+				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'" style="display: block;">';//開始タグ
 				$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
 				$view_voice .= '<audio controls="" src=""></audio>';
 //				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
@@ -106,6 +106,12 @@ for($i=1; $i <= $view_slide_num; $i++){
     /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
   else {
 	  $view_voice_copy    .= $r["voice_data"].'/';
+	  
+//				$view_voice .= '<div id="slide_now_num_'.$i.'" style="display: none;">';//開始タグ
+//				$view_voice .= 'スライド'.$i.'枚目の音声';
+//				$view_voice .= '<audio controls="" src=""></audio>';
+//				$view_voice .= '</div>';//終了タグ
+
     }
 }
 	
@@ -182,8 +188,6 @@ for($i=1; $i <= $view_slide_num; $i++){
 		</label>
 	</form>
 
-	<!--★★ajax処理で送信に変更-->
-	<!--https://qiita.com/yasumodev/items/cffb735f46ffd489a4db-->
 
 		  
 	<label for="rec" >
@@ -279,7 +283,6 @@ let slide_num ='';//スライド総数
 
    
 //スライド表示機能 （slick.jsを使用）
-	
 	$(function () {
 	
 	  //現在のスライド枚数表示処理
@@ -289,6 +292,9 @@ let slide_num ='';//スライド総数
 		  
 		  	slide_num = slick.slideCount;//スライド総数
 			slide_now_num =slick.currentSlide + 1;//現在のスライド番号
+		  
+			//audioタグ表示切替処理処理
+			  voice_display(slide_num,slide_now_num);
 	  })
 		  .slick({
 			// option here...
@@ -297,27 +303,24 @@ let slide_num ='';//スライド総数
 			$('.current').text(nextSlide + 1);
 			slide_now_num = nextSlide + 1;
 			console.log('現在のスライド番号：',slide_now_num);
-		  	
-		//audioタグ切替処理処理★★切り替えができない？なぜ？★★
-//		 for (let x = 1; x <= slick.slideCount; x++){
-//			 if(slide_now_num == x){
-//				 $('#slide_now_num_'+slide_now_num).show();
-//				 		  console.log('表示：',x);
-//				}else{
-//					$('#slide_now_num_'+slide_now_num).hide();
-//					
-//						console.log('非表示：',x);
-//				}
-//		 }
+
+		//audioタグ表示切替処理処理
+		  voice_display(slide_num,slide_now_num);
 		  
-		  
-	  });
+	  });	
+		
+
 	});
+
+
 	
-//アップロード回数
-let slide_ul_num = 0;
-//スライドデータ(DB登録用)
-let	slide_data_ul;
+	
+	
+//グローバル関数	
+	//アップロード回数
+	let slide_ul_num = 0;
+	//スライドデータ(DB登録用)
+	let	slide_data_ul;
 
 	
 //①ファイルUL押下
@@ -375,8 +378,12 @@ $('#upfile').change(function(){
 				$("#recordingslist>div").remove();
 				//新しくslick関数を動作させる
 				$('.slider'+slide_ul_num).on('init', function(event, slick) {
-			$('.current').text(slick.currentSlide + 1);
-			$('.total').text(slick.slideCount);
+					
+				$('.current').text(slick.currentSlide + 1);
+				$('.total').text(slick.slideCount);
+
+				//audioタグ表示切替処理処★★ここから！！
+				  voice_display(slide_num,slide_now_num);
 
 			  })
 				  .slick({
@@ -386,6 +393,10 @@ $('#upfile').change(function(){
 							$('.current').text(nextSlide + 1);
 							slide_now_num = nextSlide + 1;
 							console.log('現在のスライド番号：',slide_now_num);
+					
+		//audioタグ表示切替処理処理
+		  voice_display(slide_num,slide_now_num);
+					
 					  });
 			}
 	  	}
@@ -393,20 +404,13 @@ $('#upfile').change(function(){
 	
 });
 
-//②スライドをDB登録ボタン押下
-		$("#save").on("click",function(){
+	
+	
 
-			slide_ul();
-		});	
+//②スライドをDB登録ボタン押下
 	
 function slide_ul(){
-//slide_data_ul
-	//送信データ作成
-//	var fd = new FormData();
-//		//$fileで確認
-//		fd.append('upfile', slide_data_ul);
-
- var fd = new FormData($('#upfile_form').get(0));
+	let fd = new FormData($('#upfile_form').get(0));
 	
 	$.ajax({
 		type: 'POST',
@@ -456,6 +460,8 @@ function slide_ul(){
 			console.log('スライド番号：',div_slide_now_num,'、voice_data_path：',voice_data_path);
 			//var url = URL.createObjectURL(blob);
 			$('#slide_now_num_'+div_slide_now_num+'>audio').attr('src', voice_data_path);
+
+			
 			}
 			
 	   }
@@ -524,7 +530,7 @@ function slide_ul(){
 
 	//divタグ編集
 	div.id = 'slide_now_num_'+slide_now_num;
-//	div.style ="display: block;";
+	div.style ="display: block;";
 	div.innerHTML = 'スライド'+slide_now_num+'枚目の音声';
 
 		
@@ -590,6 +596,29 @@ function voice_ul(soundBlob){
 
 
 }
+
+	//audioタグ表示切替処理処理
+	//(slide_now_numはセレクタに使用しないほうが良い。なぜかは不明。挙動がおかしくなる)
+	function voice_display(slide_num,slide_now_num){
+		
+		 for (let x = 1; x <= slide_num; x++){
+
+			let decision = $('#slide_now_num_'+x).css('display');
+			console.log('decision',decision,x); 
+			if(slide_now_num === x){
+
+					if(decision === 'none'){
+						//要素が非表示だったら～
+						$('#slide_now_num_'+x).show();
+					}
+			}else{
+					if(decision === 'block'){
+						//要素が表示だったら～
+						$('#slide_now_num_'+x).hide();
+					}
+				}
+			}
+	}
 	
   </script>
   
