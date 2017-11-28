@@ -179,33 +179,49 @@ for($i=1; $i <= $view_slide_num; $i++){
 	
 	<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="upfile" >
-			<h4><span class="label label-warning btn_effect">①スライドUL</span></h4>
+			<h4><span class="label label-warning btn_effect">①スライドUL(フォルダごと)</span></h4>
 			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 		</label>
 		<label for="save" >
-			<h4><span class="label label-warning btn_effect">②スライドをDB登録(ajax)</span></h4>
+			<h4><span class="label label-warning btn_effect_slde">②スライドをDB登録(ajax)</span></h4>
 			<button type="button" id="save" onclick="slide_ul()" style="display:none;"></button>
 		</label>
+	</form>
+	
+	<form id="update_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
+		<label for="update" >
+			<h4><span class="label label-warning btn_effect">③スライドを変更</span></h4>
+			<button type="button" id="update" onclick="slide_update()" style="display:none;"></button>
+		</label>
+		<div id="update_type" style="display:none;">
+
+		<label for="slde_update_one" >
+			<h5><span class="label label-warning btn_effect" style ="margin:10px 10px;">1)今のスライドだけ変更【未実装】</span></h5>
+			<input type="file" id="slde_update_one"  name="slde_update_one" style="display:none"/>
+		</label>
+		<label for="slde_update_all" >
+			<h5><span class="label label-warning btn_effect" style ="margin:10px 10px;">2)スライド一括変更(フォルダごと)【未実装】</span></h5>
+			<input type="file" id="slde_update_all"  name="slde_update_all[]" webkitdirectory  style="display:none;"/>
+		</label>
+	
+			</div>
+				
+
 	</form>
 
 
 		  
 	<label for="rec" >
-		<h4><span class="label label-info btn_effect">③音声録音</span></h4>		  
+		<h4><span class="label label-info btn_effect">④音声録音</span></h4>		  
   		<button id="rec" onclick="startRecording(this);" style="display:none;">record</button>
   	</label>
  
  	<label for="rec_stop" >
- 		<h4><span class="label label-info btn_effect">④録音停止(ajax)</span></h4>		  
+ 		<h4><span class="label label-info btn_effect">⑤録音停止(ajax)</span></h4>		  
   		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
    	</label>
  
-<!--
- 	<label for="rec_stop" >
- 		<h4><span class="label label-info btn_effect">⑤音声DB登録(ajax)</span></h4>		  
-  		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
-   	</label>
--->
+
    	  	  
   <h5>Recordings status</h5>
   <div id="log"></div>   	
@@ -326,6 +342,8 @@ let slide_num ='';//スライド総数
 //①ファイルUL押下
 $('#upfile').change(function(){
 	$('.slider').remove();//サンプル削除
+	$('#rec , #rec_stop').prop("disabled", true);
+	$('.btn_effect').css("pointer-events", "none");
 
 	//前回ULしたスライドorサンプルスライド削除   
 	if(slide_ul_num > 0){
@@ -410,6 +428,9 @@ $('#upfile').change(function(){
 //②スライドをDB登録ボタン押下
 	
 function slide_ul(){
+	$('#rec ,#rec_stop').prop("disabled", false);
+	$('.btn_effect').css("pointer-events", "auto");
+	
 	let fd = new FormData($('#upfile_form').get(0));
 	
 	$.ajax({
@@ -425,9 +446,35 @@ function slide_ul(){
 
 
 }
+
+//③スライド変更
+function slide_update(){
+//	$('#rec ,#rec_stop').prop("disabled", false);
+//	$('.btn_effect').css("pointer-events", "auto");
 	
+	$('#update_type').toggle();
+}
+
+function slde_update_all(){
+
+//	let fd = new FormData($('#upfile_form').get(0));
+//	
+//	$.ajax({
+//		type: 'POST',
+//		url: 'slide_insert.php',
+//		data: fd,
+//		processData: false,
+//		contentType: false
+//	}).done(function(data) {
+//       console.log(data);
+//	console.log('スライド登録成功');
+//	});
+
+}
 	
-//③音声録音機能-----------------------------------
+
+	
+//④音声録音機能-----------------------------------
 
 //グローバル変数
 	
@@ -604,7 +651,7 @@ function voice_ul(soundBlob){
 		 for (let x = 1; x <= slide_num; x++){
 
 			let decision = $('#slide_now_num_'+x).css('display');
-			console.log('decision',decision,x); 
+//			console.log('decision',decision,x); 
 			if(slide_now_num === x){
 
 					if(decision === 'none'){
