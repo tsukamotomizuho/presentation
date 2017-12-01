@@ -247,7 +247,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 		</div>
 		<div class="slide_area">
 			<div class="sample_slide" >
-				<div class="slider">
+				<div class="slider0">
 				<div class="sample"><img src="img/slide_sample.png" class="img-responsive img-rounded slide sample" alt="サンプル画像" ></div>
 				<div class="sample"><img src="img/slide_sample1.png" class="img-responsive img-rounded slide sample" alt="サンプル画像1" ></div>
 				<div id="slide2"><img src="img/slide_sample2.png" class="img-responsive img-rounded slide" alt="サンプル画像2" ></div>
@@ -341,7 +341,7 @@ let slide_num ='';//スライド総数
 	
 //①ファイルUL押下
 $('#upfile').change(function(){
-	$('.slider').remove();//サンプル削除
+	$('.slider'+slide_ul_num).remove();//サンプル削除
 	$('#rec , #rec_stop').prop("disabled", true);
 	$('.btn_effect').css("pointer-events", "none");
 
@@ -351,8 +351,8 @@ $('#upfile').change(function(){
 	}
 	
 	slide_ul_num++;
-	console.log(slide_ul_num);//同じファイルを連続ULするとカウントされない。
-
+	console.log('スライドULチェック',slide_ul_num);//全く同じファイルを連続ULするとカウントされない。
+	
 	//スライドデータ(DB登録用)
 	console.log('this.files',this.files);
 	slide_data_ul = this.files;
@@ -422,31 +422,39 @@ $('#upfile').change(function(){
 	
 });
 
-//	ここから★
+
+//⑥自動再生ボタン押下後
 	function all_play(){
-
-		for(let i = slide_now_num; i <= slide_num;i++ ) {
+	
+	console.log('チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null);
 		
+		var TOTAL = 0;
 
-		var TARGET =  document.getElementById('slide_now_num_'+i+'_audio');		
-		var TOTAL = TARGET.duration*1000;
-		console.log('TOTAL：',TOTAL);
+		
+		var TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');		
+
+		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
+		TOTAL = TARGET.duration*1000;
 		TARGET.play();
+		
+		}else{
+					TOTAL = 3000;
+					//デフォルト3s
+		}
+		
+		console.log('TOTAL：',TOTAL);
+
+		
 		  var next_slide = function(){
+			if(slide_now_num !== slide_num){
 			  $('.slider'+slide_ul_num).slick('slickNext');
+			   all_play();
+				}
   		}
-
-		  		 setTimeout(next_slide, TOTAL);
-//TARGET.addEventListener("ended",console.log('音声が終了したよ'),false);	
-
+		 setTimeout(next_slide, TOTAL);
 		}
 
-		
-		
-
-	}
-
-
+	
 //②スライドをDB登録ボタン押下
 	
 function slide_ul(){
@@ -465,8 +473,6 @@ function slide_ul(){
        console.log(data);
 	console.log('スライド登録成功');
 	});
-
-
 }
 
 //③スライド変更
@@ -577,7 +583,7 @@ function slde_update_all(){
     recorder && recorder.stop();
 //    button.disabled = true;
 //    button.previousElementSibling.disabled = false;
-    __log('Stopped recording.  ('+PassSec+'s)');
+    __log('Stopped recording.');
 	 clearInterval( PassageID );   // タイマーのクリア
     
     // create WAV download link using audio data blob
