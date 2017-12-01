@@ -220,21 +220,26 @@ for($i=1; $i <= $view_slide_num; $i++){
  		<h4><span class="label label-info btn_effect">⑤録音停止(ajax)</span></h4>		  
   		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
    	</label>
- 
-
    	  	  
-  <h5>Recordings status</h5>
-  <div id="log"></div>   	
+  <h5>- Recordings status -</h5>
+  <div id="log" style = "margin-bottom:10px;"></div>   	
   <div id="recordingslist"></div>
-  
-
 
  	<label for="all_play" >
  		<h4><span class="label label-success btn_effect">⑥自動再生</span></h4>		  
-  		<button id="all_play" onclick="all_play();"  style="display:none;">stop</button>
+  		<button id="all_play" onclick="all_play();"  style="display:none;">start</button>
    	</label>
 
+ 	<label for="all_play_stop" >
+ 		<h4><span class="label label-success btn_effect">⑦自動再生停止</span></h4>		  
+  		<button id="all_play_stop" onclick="all_play_stop();"  style="display:none;">stop</button>
+   	</label>
 
+ 	<label for="all_play_stop_tmp" >
+ 		<h4><span class="label label-success btn_effect">⑧一時停止</span></h4>		  
+  		<button id="all_play_stop_tmp" onclick="all_play_stop_tmp();"  style="display:none;">stop</button>
+   	</label>
+   	   	
 	</div>
 	<div class="col-xs-1 col-sm-1" >
 	</div>	
@@ -424,36 +429,63 @@ $('#upfile').change(function(){
 
 
 //⑥自動再生ボタン押下後
-	function all_play(){
+let all_play_flag = false;
+var TARGET;
 	
-	console.log('チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null);
+	function all_play(){
+		all_play_flag = true;
+		all_play_true();
+	}
+		
+	function all_play_true(){
+		
+		console.log('音声存在チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null);
 		
 		var TOTAL = 0;
-
-		
-		var TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');		
+		TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');		
 
 		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
-		TOTAL = TARGET.duration*1000;
-		TARGET.play();
-		
+			TOTAL = TARGET.duration*1000;
+			TARGET.play();
 		}else{
-					TOTAL = 3000;
-					//デフォルト3s
+			TOTAL = 3000;
+			//デフォルト3s
 		}
 		
 		console.log('TOTAL：',TOTAL);
+		var next_slide = function(){
 
-		
-		  var next_slide = function(){
-			if(slide_now_num !== slide_num){
+			if(slide_now_num !== slide_num && all_play_flag){
 			  $('.slider'+slide_ul_num).slick('slickNext');
-			   all_play();
+			   all_play_true();
 				}
   		}
 		 setTimeout(next_slide, TOTAL);
 		}
 
+//⑦停止ボタン押下後
+	function all_play_stop(){
+		
+		all_play_flag = false;
+		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
+					TARGET.pause();
+					TARGET.currentTime = 0;
+			
+				}
+
+}
+	
+//⑧一時停止ボタン押下後
+	function all_play_stop_tmp(){
+		
+		all_play_flag = false;
+		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
+					TARGET.pause();
+			
+				}
+
+}
+	
 	
 //②スライドをDB登録ボタン押下
 	
