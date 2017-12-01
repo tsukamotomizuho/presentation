@@ -6,8 +6,8 @@ session_start();
 include("functions.php");
 //ssidChk();//セッションチェック関数
 
- echo var_dump($_POST);//filenameはこれで表示
- echo var_dump($_FILES);//blobデータはこれで表示
+// echo var_dump($_POST);//filenameはこれで表示
+// echo var_dump($_FILES);//blobデータはこれで表示
 
 
 //入力チェック(受信確認処理追加)
@@ -32,7 +32,7 @@ if(
 
  echo '　　スライド番号：'.$slide_now_num;
  echo '　　スライド名：'.$slide_name;
- echo '　　スライドID：'.$slide_id;
+ echo '　　スライドID：'.$slide_id. '　　';
 
 //Fileアップロードチェック
 if (isset($_FILES["sound_blob"])) {
@@ -49,7 +49,7 @@ if (isset($_FILES["sound_blob"])) {
     $extension = pathinfo($file_name, PATHINFO_EXTENSION); //拡張子取得(.wav)
     $file_name = date("YmdHis")."_slide_id".$slide_id."_slide_num".$slide_now_num."_" .md5(session_id()) . "." . $extension;  //ユニークファイル名作成//md5：暗号化
 
-	echo '　　音声ファイル名：'.$file_name;
+//	echo '　　音声ファイル名：'.$file_name;
 	
     $img="";  //画像表示orError文字を保持する変数
 		
@@ -58,10 +58,11 @@ if (isset($_FILES["sound_blob"])) {
         if ( move_uploaded_file( $tmp_path, $file_dir_path . $file_name ) ) {
 			//一時フォルダからupload/1.jpgへ移動、ファイル名は変更可能
             chmod( $file_dir_path . $file_name, 0644 );//ファイルに権限付与 0644
-            //echo $file_name . "をアップロードしました。";
+            echo $file_name . "をアップロードしました。";
 
         } else {
-            //$img = "Error:アップロードできませんでした。"; //Error文字
+            echo $file_name . "をアップロードできませんでした。";
+//Error文字
         }
     }
     // FileUpload [--End--]

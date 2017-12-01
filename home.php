@@ -16,7 +16,7 @@ $status = $stmt->execute();
 //実行後、エラーだったらfalseが返る
 
 
-$view_slide = '<div class="slider">';//slider開始タグ
+$view_slide = '<div class="slider0">';//slider開始タグ
 $view_slide_id   = "なし";
 $view_slide_data ='';//スライド画像ファイル名の羅列
 $view_slide_name ='';//スライド名
@@ -94,7 +94,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'" style="display: block;">';//開始タグ
 				$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
-				$view_voice .= '<audio controls="" src=""></audio>';
+				$view_voice .= '<audio id="slide_now_num_'.$view_slide_now_num.'_audio" controls="" src=""></audio>';
 //				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
 				$view_voice .= '</div>';//終了タグ
 
@@ -231,7 +231,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 
  	<label for="all_play" >
  		<h4><span class="label label-success btn_effect">⑥自動再生</span></h4>		  
-<!--  		<button id="all_play" onclick=";"  style="display:none;">stop</button>-->
+  		<button id="all_play" onclick="all_play();"  style="display:none;">stop</button>
    	</label>
 
 
@@ -302,7 +302,7 @@ let slide_num ='';//スライド総数
 	$(function () {
 	
 	  //現在のスライド枚数表示処理
-	  $('.slider').on('init', function(event, slick) {
+	  $('.slider0').on('init', function(event, slick) {
 			$('.current').text(slick.currentSlide + 1);
 			$('.total').text(slick.slideCount);
 		  
@@ -422,8 +422,30 @@ $('#upfile').change(function(){
 	
 });
 
-	
-	
+//	ここから★
+	function all_play(){
+
+		for(let i = slide_now_num; i <= slide_num;i++ ) {
+		
+
+		var TARGET =  document.getElementById('slide_now_num_'+i+'_audio');		
+		var TOTAL = TARGET.duration*1000;
+		console.log('TOTAL：',TOTAL);
+		TARGET.play();
+		  var next_slide = function(){
+			  $('.slider'+slide_ul_num).slick('slickNext');
+  		}
+
+		  		 setTimeout(next_slide, TOTAL);
+//TARGET.addEventListener("ended",console.log('音声が終了したよ'),false);	
+
+		}
+
+		
+		
+
+	}
+
 
 //②スライドをDB登録ボタン押下
 	
@@ -521,7 +543,7 @@ function slde_update_all(){
 
   var audio_context;
   var recorder;
-
+  var PassSec = 0;   // 秒数カウント用変数
   function startUserMedia(stream) {
     var input = audio_context.createMediaStreamSource(stream);
 //    __log('Media stream created.');
@@ -537,18 +559,26 @@ function slde_update_all(){
 
 	//録音開始
   function startRecording(button) {
+	PassSec = 0;
     recorder && recorder.record();
 //    button.disabled = true;
 //    button.nextElementSibling.disabled = false;
-    __log('Recording...');
+ 	PassageID = setInterval('show_voicelog()',1000);   // タイマーをセット(1000ms間隔)
+
   }
 
+	function show_voicelog() { 
+		PassSec++
+    __log('Recording...   ('+PassSec+'s)');
+	}
+	
 	//録音停止
   function stopRecording(button) {
     recorder && recorder.stop();
 //    button.disabled = true;
 //    button.previousElementSibling.disabled = false;
-    __log('Stopped recording.');
+    __log('Stopped recording.  ('+PassSec+'s)');
+	 clearInterval( PassageID );   // タイマーのクリア
     
     // create WAV download link using audio data blob
     createDownloadLink();
@@ -584,6 +614,8 @@ function slde_update_all(){
 	//audioタグ編集
       au.controls = true;
       au.src = url;
+	  au.id = 'slide_now_num_'+slide_now_num+'_audio';
+
 	//aタグ(音声DL)編集
       hf.href = url;
 		//ダウンロード属性
@@ -638,7 +670,7 @@ function voice_ul(soundBlob){
 		contentType: false
 	}).done(function(data) {
        console.log(data);
-	console.log('音声登録成功');
+	console.log('音声登録処理終了');
 	});
 
 
