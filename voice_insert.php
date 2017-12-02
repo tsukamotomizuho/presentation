@@ -35,7 +35,7 @@ if(
  echo '　　スライドID：'.$slide_id. '　　';
 
 //Fileアップロードチェック
-if (isset($_FILES["sound_blob"])) {
+if (isset($_FILES["sound_blob"]) && $_FILES["sound_blob"]["error"] == '0') {
 
 	$sound_data ='';
 	
@@ -61,14 +61,14 @@ if (isset($_FILES["sound_blob"])) {
             echo $file_name . "をアップロードしました。";
 
         } else {
-            echo $file_name . "をアップロードできませんでした。";
+            echo 'Error：'.$file_name . "をアップロードできませんでした。";
 //Error文字
         }
     }
     // FileUpload [--End--]
 
 }else{
-//    $img = "画像が送信されていません"; //Error文字
+            echo 'Error：'.$file_name . "が受信できませんでした。";
 }
 
 
