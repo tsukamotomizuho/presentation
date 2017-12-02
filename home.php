@@ -709,7 +709,8 @@ function voice_ul(soundBlob){
 		}
 	}
 
-//自動再生処理
+	
+//1)自動再生処理
 let all_play_flag = false;
 var TARGET;
 	
@@ -722,17 +723,28 @@ var TARGET;
 		console.log('音声存在チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null);
 		
 		var TOTAL = 0;
-		TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');		
+		TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');
 
 		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
-			TOTAL = TARGET.duration*1000;
+			
+			
 			TARGET.play();
+			//audioタグシークバー同期処理
+			//シークバーが終了位置にあると、自動的に頭出ししてくれる。audio.jsの処理？
+
+			let NOW =TARGET.currentTime*1000;
+			TOTAL = TARGET.duration*1000;
+			TOTAL = TOTAL - NOW;
+			console.log('NOW：',NOW);
+			console.log('TOTAL：',TOTAL);
+
 		}else{
 			TOTAL = 3000;
+			console.log('TOTAL：',TOTAL);
 			//デフォルト3s
 		}
 		
-		console.log('TOTAL：',TOTAL);
+
 		var next_slide = function(){
 
 			if(slide_now_num !== slide_num && all_play_flag){
@@ -750,7 +762,7 @@ var TARGET;
 		setTimeout(next_slide, TOTAL);
 	}
 
-//一時停止処理
+//2)一時停止処理
 	function all_play_stop_tmp(){
 		
 		all_play_flag = false;
@@ -760,13 +772,13 @@ var TARGET;
 				}
 }
 	
-//⑦停止ボタン押下後
+//⑦停止ボタン押下後 不要？
 	function all_play_stop(){
 		
 		all_play_flag = false;
 		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
-					TARGET.pause();
-					TARGET.currentTime = 0;
+			TARGET.currentTime = 0;
+			TARGET.pause();
 			
 				}
 
