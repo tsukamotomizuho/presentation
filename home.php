@@ -94,7 +94,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'" style="display: block;">';//開始タグ
 				$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
-				$view_voice .= '<audio id="slide_now_num_'.$view_slide_now_num.'_audio" controls="" src=""></audio>';
+				$view_voice .= '<audio id="slide_now_num_'.$view_slide_now_num.'_audio" controls="" src="" ></audio>';
 //				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
 				$view_voice .= '</div>';//終了タグ
 
@@ -597,7 +597,7 @@ function slde_update_all(){
       var hf = document.createElement('a');
 
 	//旧divタグ(旧音声)削除 
-	//※表示のみ。データは残る。あとでphp側で処理要★
+	//※表示のみ。データは残る。
 	 $('#slide_now_num_'+slide_now_num).remove();
 
 	//divタグ編集
@@ -700,10 +700,12 @@ function voice_ul(soundBlob){
 		
 		if(all_play_flag){
 			all_play_stop_tmp();
+			$('audio').css("pointer-events", "auto");
 			$('.all_play').show();
 			$('.all_play_stop').hide();
 		}else{
 			all_play();
+			$('audio').css("pointer-events", "none");
 			$('.all_play').hide();
 			$('.all_play_stop').show();
 		}
