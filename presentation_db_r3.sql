@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: 2017 年 12 朁E01 日 12:51
+-- Generation Time: 2017 年 12 朁E03 日 12:40
 -- サーバのバージョン： 5.6.21
 -- PHP Version: 5.6.3
 
@@ -27,19 +27,15 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE IF NOT EXISTS `slide_table` (
-`slide_id` int(12) NOT NULL,
+`slide_id` int(128) NOT NULL,
+  `slide_group` int(128) NOT NULL,
   `slide_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `slide_num` int(128) NOT NULL,
+  `slide_now_num` int(12) NOT NULL,
   `slide_data` text COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` int(128) NOT NULL,
   `create_date` datetime NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- テーブルのデータのダンプ `slide_table`
---
-
-INSERT INTO `slide_table` (`slide_id`, `slide_name`, `slide_num`, `slide_data`, `create_date`) VALUES
-(65, 'テストスライド', 3, '/201712011244430_ae713146106ccf510ee3d9b0f1546efb.png/201712011244431_ae713146106ccf510ee3d9b0f1546efb.png/201712011244432_ae713146106ccf510ee3d9b0f1546efb.png', '2017-12-01 20:44:43');
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -48,21 +44,13 @@ INSERT INTO `slide_table` (`slide_id`, `slide_name`, `slide_num`, `slide_data`, 
 --
 
 CREATE TABLE IF NOT EXISTS `voice_table` (
-`voice_id` int(12) NOT NULL,
-  `slide_id` int(12) NOT NULL,
+`voice_id` int(128) NOT NULL,
+  `slide_group` int(128) NOT NULL,
   `slide_now_num` int(12) NOT NULL,
   `voice_data` text COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` int(128) NOT NULL,
   `create_date` datetime NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=185 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- テーブルのデータのダンプ `voice_table`
---
-
-INSERT INTO `voice_table` (`voice_id`, `slide_id`, `slide_now_num`, `voice_data`, `create_date`) VALUES
-(182, 65, 3, '20171201124926_slide_id65_slide_num3_ae713146106ccf510ee3d9b0f1546efb.wav', '2017-12-01 20:49:26'),
-(183, 65, 1, '20171201124932_slide_id65_slide_num1_ae713146106ccf510ee3d9b0f1546efb.wav', '2017-12-01 20:49:32'),
-(184, 65, 2, '20171201124938_slide_id65_slide_num2_ae713146106ccf510ee3d9b0f1546efb.wav', '2017-12-01 20:49:38');
+) ENGINE=InnoDB AUTO_INCREMENT=214 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Indexes for dumped tables
@@ -88,12 +76,12 @@ ALTER TABLE `voice_table`
 -- AUTO_INCREMENT for table `slide_table`
 --
 ALTER TABLE `slide_table`
-MODIFY `slide_id` int(12) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=66;
+MODIFY `slide_id` int(128) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=53;
 --
 -- AUTO_INCREMENT for table `voice_table`
 --
 ALTER TABLE `voice_table`
-MODIFY `voice_id` int(12) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=185;
+MODIFY `voice_id` int(128) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=214;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
