@@ -4,49 +4,73 @@ session_start();
 //0.外部ファイル読み込み
 include("functions.php");
 //ssidChk();//セッションチェック関数
-//$_SESSION["kanri_flg"] == 1 セッション関数
+
+//セッション関数(ユーザ情報)
+$_SESSION["user_name"] = 'テストユーザ' ;
+$_SESSION["user_id"] = '1' ;
+
+//データがないときの処理記述要？★
 
 
 //2. DB接続
 $pdo = db_con();
-
+	
 //３．SQLを作成(スライド取得)
-$stmt = $pdo->prepare("SELECT * FROM slide_table ORDER BY slide_id DESC  LIMIT 1");
-$status = $stmt->execute();
-//実行後、エラーだったらfalseが返る
 
+$view_slide_group_id ="なし";
+$view_slide_num  ='';//スライドの総数
 
+//①スライド総数を取得
+	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group_id DESC LIMIT 1");
+	$status = $stmt->execute();
+	//実行後、エラーだったらfalseが返る
+
+	//最新の取得スライドからslide_group_idとslide_numを取得
+	if($status==false){
+		queryError($stmt);
+	}else{//正常
+		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+			$view_slide_group_id = $r["slide_group_id"];
+			$view_slide_num      = $r["slide_num"];
+		}
+	}
+		
+	
 $view_slide = '<div class="slider0">';//slider開始タグ
 $view_slide_id   = "なし";
-$view_slide_data ='';//スライド画像ファイル名の羅列
+$view_slide_data ='';//スライド画像ファイル名
+$view_slide_data_copy ='' ;//デバック用
 $view_slide_name ='';//スライド名
-$view_slide_num  ='';//スライドの総数
-$file_dir_path   = "upload/";  //画像ファイル保管先
+$file_dir_path = "upload/";  //画像ファイル保管先
 
-//4.取得スライド or エラー表示
-if($status==false){
-	queryError($stmt);
-}else{//正常
-	while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+//②スライドを一枚ずつ取得＆表示html作成	
+	for($i=0; $i < $view_slide_num; $i++){
 
+		//sqlのselect実行結果(件数)確認用
+		$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_group_id =".$view_slide_group_id." AND slide_now_num =".$i." ORDER BY slide_id DESC LIMIT 1");
+		$status = $stmt->execute();
 
-		$view_slide_data .= $r["slide_data"];
-		$view_slide_data_copy = $view_slide_data;
-		$view_slide_data_copy = str_replace("/", "★", $view_slide_data_copy );
-		
-		$view_slide_name .= $r["slide_name"];
-		$view_slide_id   = $r["slide_id"];
-		$view_slide_num  = $r["slide_num"];	
-		//第1=ターゲット, 第2=元の文字􀀁
-		$view_slide_data = explode("/" , $view_slide_data );
+	//表示html作成
+	if($status==false){
+		queryError($stmt);
+	}else{//正常
+		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
 
-		for ($i=1; $i < count($view_slide_data); $i++) {		
+			$view_slide_data 	  = $r["slide_data"];
+			$view_slide_data_copy .= $view_slide_data.'★';
+			$view_slide_name      = $r["slide_name"];
+			$view_slide_id        = $r["slide_id"];
+			$view_slide_now_num   = $r["slide_now_num"];	
+
+	
 			$view_slide .= '<div class="db_slide">';
-			$view_slide .= 	'<img src="'.$file_dir_path.$view_slide_data[$i].'" class="img-responsive img-rounded slide sample" alt="dbスライド" ></div>';
-		}
-			$view_slide .= '</div>'; //slider終了タグ
+			$view_slide .= 	'<img src="'.$file_dir_path.$view_slide_data.'" class="img-responsive img-rounded slide" alt="dbスライド" ></div>';
+		}		
 	}
-}
+  }
+			$view_slide .= '</div>'; //slider終了タグ
+
+
 
 //5．SQLを作成(音声取得)
 //スライド番号ごとに取り出す
@@ -97,28 +121,16 @@ for($i=1; $i <= $view_slide_num; $i++){
 				$view_voice .= '<audio id="slide_now_num_'.$view_slide_now_num.'_audio" controls="" src="" ></audio>';
 //				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
 				$view_voice .= '</div>';//終了タグ
-
-				
 			}
 		}  
-	  
     }
     /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
   else {
 	  $view_voice_copy    .= $r["voice_data"].'/';
-	  
-//				$view_voice .= '<div id="slide_now_num_'.$i.'" style="display: none;">';//開始タグ
-//				$view_voice .= 'スライド'.$i.'枚目の音声';
-//				$view_voice .= '<audio controls="" src=""></audio>';
-//				$view_voice .= '</div>';//終了タグ
-
     }
+  }
 }
-	
-	
-
-
-}
+		
 ?>
 
 <!DOCTYPE html>
@@ -163,13 +175,12 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 	<div class="room_name"></div>
 
-
 <div class="container">
   <div class="row">
 	<div class="col-xs-4 col-sm-3 select_div" >
 		<div>
 			<div class="alert alert-warning">
-			  <strong>xxxさん</strong> 
+			  <strong><?=$_SESSION["user_name"]?>さん</strong> 
 		</div>
 
 		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="アイコンサンプル画像" >
@@ -272,7 +283,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 				<div id="slide3"><img  src="img/slide_sample3.png" class="img-responsive img-rounded slide" alt="サンプル画像3" ></div>
 				</div>
 			</div>
-			<div><?=$view_slide?></div>
+			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 	</div>
 
@@ -313,6 +324,9 @@ let slide_num ='';//スライド総数
 		
 		slide_num = view_slide_num;
 		
+	   }else{
+	   		$('.db_slide').remove();
+		   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
 	   }
 
    
@@ -326,6 +340,9 @@ let slide_num ='';//スライド総数
 		  
 		  	slide_num = slick.slideCount;//スライド総数
 			slide_now_num =slick.currentSlide + 1;//現在のスライド番号
+		  
+		    console.log("slide_num：",slide_num);//★スライド総数がおかしい
+			console.log("slide_now_num：",slide_now_num);//★スライド総数がおかしい
 		  
 			//audioタグ表示切替処理処理
 			  voice_display(slide_num,slide_now_num);
@@ -355,7 +372,8 @@ let slide_num ='';//スライド総数
 	let slide_ul_num = 0;
 	//スライドデータ(DB登録用)
 	let	slide_data_ul;
-
+	//スライド名
+	let slide_name;
 	
 //①ファイルUL押下
 $('#upfile').change(function(){
@@ -385,11 +403,16 @@ $('#upfile').change(function(){
 	let slider_add = '';
 	slider_add += '<div class="slider'+slide_ul_num+'">';	
 
+		
 	//ULされたスライドのhtmlを作成
 	for (let i = 0; i < this.files.length; i++) {
 
 		// 選択されたファイル情報を取得
 		let file = this.files[i];
+		
+		//アップロードされたファイル名からスライド名を取得
+		slide_name = file['webkitRelativePath'].split('/')[0]
+		console.log('slide_name:',slide_name);
 
 		// readerのresultプロパティに、データURLとしてエンコードされたファイルデータを格納
 		let reader = new FileReader();
@@ -418,7 +441,9 @@ $('#upfile').change(function(){
 				$('.current').text(slick.currentSlide + 1);
 				$('.total').text(slick.slideCount);
 
-				//audioタグ表示切替処理処★★ここから！！
+				console.log('slide_num',slick.slideCount);
+
+				//audioタグ表示切替処理処
 				  voice_display(slide_num,slide_now_num);
 
 			  })
@@ -452,6 +477,10 @@ function slide_ul(){
 	
 	let fd = new FormData($('#upfile_form').get(0));
 	
+	//$postで確認
+	fd.append('slide_name', slide_name);
+
+	
 	$.ajax({
 		type: 'POST',
 		url: 'slide_insert.php',
@@ -460,7 +489,7 @@ function slide_ul(){
 		contentType: false
 	}).done(function(data) {
        console.log(data);
-	console.log('スライド登録成功');
+	console.log('スライド登録処理終了');
 	});
 }
 
