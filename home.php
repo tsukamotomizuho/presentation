@@ -17,20 +17,20 @@ $pdo = db_con();
 	
 //３．SQLを作成(スライド取得)
 
-$view_slide_group_id ="なし";
+$view_slide_group ="なし";
 $view_slide_num  ='';//スライドの総数
 
-//①スライド総数を取得
-	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group_id DESC LIMIT 1");
+//①スライド総数と最新のスライドグループ(★要検討)を取得
+	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
 	$status = $stmt->execute();
 	//実行後、エラーだったらfalseが返る
 
-	//最新の取得スライドからslide_group_idとslide_numを取得
+	//最新の取得スライドからslide_groupとslide_numを取得
 	if($status==false){
 		queryError($stmt);
 	}else{//正常
 		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-			$view_slide_group_id = $r["slide_group_id"];
+			$view_slide_group = $r["slide_group"];
 			$view_slide_num      = $r["slide_num"];
 		}
 	}
@@ -44,10 +44,14 @@ $view_slide_name ='';//スライド名
 $file_dir_path = "upload/";  //画像ファイル保管先
 
 //②スライドを一枚ずつ取得＆表示html作成	
-	for($i=0; $i < $view_slide_num; $i++){
+	for($i=1; $i <= $view_slide_num; $i++){
 
 		//sqlのselect実行結果(件数)確認用
-		$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_group_id =".$view_slide_group_id." AND slide_now_num =".$i." ORDER BY slide_id DESC LIMIT 1");
+		$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." AND
+			slide_group =".$view_slide_group." AND 
+			slide_now_num =".$i." 
+			ORDER BY slide_id DESC LIMIT 1");
+		
 		$status = $stmt->execute();
 
 	//表示html作成
@@ -61,8 +65,6 @@ $file_dir_path = "upload/";  //画像ファイル保管先
 			$view_slide_name      = $r["slide_name"];
 			$view_slide_id        = $r["slide_id"];
 			$view_slide_now_num   = $r["slide_now_num"];	
-
-	
 			$view_slide .= '<div class="db_slide">';
 			$view_slide .= 	'<img src="'.$file_dir_path.$view_slide_data.'" class="img-responsive img-rounded slide" alt="dbスライド" ></div>';
 		}		
@@ -81,13 +83,19 @@ $file_dir_path = "upload/";  //画像ファイル保管先
 for($i=1; $i <= $view_slide_num; $i++){
 		
 		//sqlのselect実行結果(件数)確認用
-		$sql = 'SELECT COUNT(*) FROM voice_table WHERE slide_id ='.$view_slide_id.' AND slide_now_num ='.$i;
+		$sql = 'SELECT COUNT(*) FROM voice_table 
+		WHERE user_id ='.$_SESSION["user_id"].' AND 
+		slide_group ='.$view_slide_group.' AND 
+		slide_now_num ='.$i;
 	
 		$res = $pdo->prepare($sql);
 		$status1 = $res->execute();
 		
-		//sqlのselect実行文
-		$voice_table_sql = 'SELECT * FROM voice_table WHERE slide_id ='.$view_slide_id.' AND slide_now_num ='.$i.' ORDER BY voice_id DESC LIMIT 1';
+		//sqlのselect実行文(最新の音声を取得)
+		$voice_table_sql = 'SELECT * FROM voice_table WHERE user_id ='.$_SESSION["user_id"].' AND 
+		slide_group ='.$view_slide_group.' AND 
+		slide_now_num ='.$i.' 
+		ORDER BY voice_id DESC LIMIT 1';
 
 		$stmt = $pdo->prepare($voice_table_sql);
 		$status2 = $stmt->execute();
@@ -100,7 +108,8 @@ for($i=1; $i <= $view_slide_num; $i++){
 	
  if ($status1) {
 
-  /* SELECT 文にマッチする行数をチェックする */
+  //DBに該当する音声があるかどうかチェック
+  /* SELECT 文にマッチする行数をチェック*/
   if ($res->fetchColumn() > 0) {
 
 	if($status2==false){
@@ -111,15 +120,13 @@ for($i=1; $i <= $view_slide_num; $i++){
 	  while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
 
 				$view_voice_id      = $r["voice_id"];
-				$view_slide_now_num = $r["slide_now_num"];
 				$view_voice_data    = $r["voice_data"];
 				$view_voice_copy    .= $r["voice_data"].'/';
-				
+		  		//$slide_now_num = $iだから不要
 
-				$view_voice .= '<div id="slide_now_num_'.$view_slide_now_num.'" style="display: block;">';//開始タグ
-				$view_voice .= 'スライド'.$view_slide_now_num.'枚目の音声';
-				$view_voice .= '<audio id="slide_now_num_'.$view_slide_now_num.'_audio" controls="" src="" ></audio>';
-//				$view_voice .= '<a href="#" download="">音声ファイル名</a>';
+				$view_voice .= '<div id="slide_now_num_'.$i.'" style="display: block;">';//開始タグ
+				$view_voice .= 'スライド'.$i.'枚目の音声';
+				$view_voice .= '<audio id="slide_now_num_'.$i.'_audio" controls="" src="" ></audio>';
 				$view_voice .= '</div>';//終了タグ
 			}
 		}  
@@ -190,18 +197,20 @@ for($i=1; $i <= $view_slide_num; $i++){
 	
 	<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="upfile" >
-			<h4><span class="label label-warning btn_effect">①スライドUL(フォルダごと)</span></h4>
+			<h4><span class="label label-warning btn_effect">①スライド登録(フォルダ)</span></h4>
 			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 		</label>
+<!--
 		<label for="save" >
 			<h4><span class="label label-warning btn_effect_slde">②スライドをDB登録(ajax)</span></h4>
 			<button type="button" id="save" onclick="slide_ul()" style="display:none;"></button>
 		</label>
+-->
 	</form>
 	
 	<form id="update_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="update" >
-			<h4><span class="label label-warning btn_effect">③スライドを変更</span></h4>
+			<h4><span class="label label-warning btn_effect">②スライドを変更</span></h4>
 			<button type="button" id="update" onclick="slide_update()" style="display:none;"></button>
 		</label>
 		<div id="update_type" style="display:none;">
@@ -223,12 +232,12 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 		  
 	<label for="rec" >
-		<h4><span class="label label-info btn_effect">④音声録音</span></h4>		  
+		<h4><span class="label label-info btn_effect">③音声録音</span></h4>		  
   		<button id="rec" onclick="startRecording(this);" style="display:none;">record</button>
   	</label>
  
  	<label for="rec_stop" >
- 		<h4><span class="label label-info btn_effect">⑤録音停止(ajax)</span></h4>		  
+ 		<h4><span class="label label-info btn_effect">④録音停止(ajax)</span></h4>		  
   		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
    	</label>
  
@@ -302,25 +311,30 @@ for($i=1; $i <= $view_slide_num; $i++){
 //グローバル変数
 let slide_now_num ='';//現在のスライド番号
 let slide_num ='';//スライド総数
-	
+let slide_id ='';//スライドid
+let slide_group ='';//スライドグループid
+let slide_name = '';
 
 	//DBのスライド有無チェック
 	//メモ：javascriptでphpを呼び出す際は、''でくくる
-	let view_slide_id ='<?=$view_slide_id?>';
-	console.log("DBのスライド有無チェック",view_slide_id);
+	slide_id ='<?=$view_slide_id?>';
+	console.log("DBのスライド有無チェック",slide_id);
 
-	if(view_slide_id != 'なし'){
+	if(slide_id != 'なし'){
 		//スライドデバッグ用
-		let view_slide_name ='<?=$view_slide_name?>';
+		slide_name ='<?=$view_slide_name?>';
 		let view_slide_data ='<?=$view_slide_data_copy?>';
 		let view_slide_num = '<?=$view_slide_num?>';
-		console.log('スライド名',view_slide_name);
+		slide_group = '<?=$view_slide_group?>';
+
+		console.log('スライド名',slide_name);
 		console.log('スライドデータ',view_slide_data);
-		console.log('スライドid',view_slide_id);
+		console.log('スライドid',slide_id);
+		console.log('スライドグループid',slide_group);
 		console.log('スライド総数',view_slide_num);
 
 	   $('.sample_slide').remove();
-	   $('#slide_name').append('<?=$view_slide_name?>');
+	   $('#slide_name').append(slide_name);
 		
 		slide_num = view_slide_num;
 		
@@ -341,8 +355,8 @@ let slide_num ='';//スライド総数
 		  	slide_num = slick.slideCount;//スライド総数
 			slide_now_num =slick.currentSlide + 1;//現在のスライド番号
 		  
-		    console.log("slide_num：",slide_num);//★スライド総数がおかしい
-			console.log("slide_now_num：",slide_now_num);//★スライド総数がおかしい
+		    console.log("slide_num：",slide_num);
+			console.log("slide_now_num：",slide_now_num);
 		  
 			//audioタグ表示切替処理処理
 			  voice_display(slide_num,slide_now_num);
@@ -357,10 +371,8 @@ let slide_num ='';//スライド総数
 
 		//audioタグ表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
-		  
-	  });	
-		
 
+	  });	
 	});
 
 
@@ -372,13 +384,11 @@ let slide_num ='';//スライド総数
 	let slide_ul_num = 0;
 	//スライドデータ(DB登録用)
 	let	slide_data_ul;
-	//スライド名
-	let slide_name;
 	
-//①ファイルUL押下
+//①ファイルUL押下(DB登録も含む)
 $('#upfile').change(function(){
 	$('.slider'+slide_ul_num).remove();//サンプル削除
-	$('#rec , #rec_stop').prop("disabled", true);
+//	$('#rec , #rec_stop').prop("disabled", true);
 	$('.btn_effect').css("pointer-events", "none");
 
 	//前回ULしたスライドorサンプルスライド削除   
@@ -411,8 +421,7 @@ $('#upfile').change(function(){
 		let file = this.files[i];
 		
 		//アップロードされたファイル名からスライド名を取得
-		slide_name = file['webkitRelativePath'].split('/')[0]
-		console.log('slide_name:',slide_name);
+		slide_name = file['webkitRelativePath'].split('/')[0];
 
 		// readerのresultプロパティに、データURLとしてエンコードされたファイルデータを格納
 		let reader = new FileReader();
@@ -457,20 +466,18 @@ $('#upfile').change(function(){
 					
 		//audioタグ表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
-					
-					  });
-			}
-	  	}
+		  });
+		}
+	  }
 	}
+	
+	//DB登録処理(ajax)
+	slide_ul();
 	
 });
 
 	
-	
-	
-	
-//②スライドをDB登録ボタン押下
-	
+//DB登録処理(ajax)
 function slide_ul(){
 	$('#rec ,#rec_stop').prop("disabled", false);
 	$('.btn_effect').css("pointer-events", "auto");
@@ -480,7 +487,6 @@ function slide_ul(){
 	//$postで確認
 	fd.append('slide_name', slide_name);
 
-	
 	$.ajax({
 		type: 'POST',
 		url: 'slide_insert.php',
@@ -489,11 +495,13 @@ function slide_ul(){
 		contentType: false
 	}).done(function(data) {
        console.log(data);
+	slide_group = data.split('/')[1];
 	console.log('スライド登録処理終了');
+	console.log('slide_group:',slide_group);		
 	});
 }
 
-//③スライド変更
+//②スライド変更
 function slide_update(){
 //	$('#rec ,#rec_stop').prop("disabled", false);
 //	$('.btn_effect').css("pointer-events", "auto");
@@ -682,8 +690,8 @@ function voice_ul(soundBlob){
 		fd.append('sound_blob', soundBlob);
 		//$postで確認
 		fd.append('file_name', 'slide'+slide_now_num+'_voice.wav');
-		fd.append('slide_name', '<?=$view_slide_name?>');
-		fd.append('slide_id', '<?=$view_slide_id?>');
+		fd.append('slide_name', slide_name);
+		fd.append('slide_group', slide_group);
 		fd.append('slide_now_num', slide_now_num);
 
 	$.ajax({
@@ -722,28 +730,27 @@ function voice_ul(soundBlob){
 				}
 			}
 	}
-	
-	
+
+
+
 //	⑥自動再生/一時停止ボタン押下後
+
+//1)自動再生処理
+let all_play_flag = false;
+var TARGET;
+
 	function all_play_btn(){
 		
 		if(all_play_flag){
 			all_play_stop_tmp();
-			$('audio').css("pointer-events", "auto");
-			$('.all_play').show();
-			$('.all_play_stop').hide();
 		}else{
 			all_play();
-			$('audio').css("pointer-events", "none");
+			//audioタグ無効
+			$('audio, .slick-arrow ,.db_slide').css("pointer-events", "none");
 			$('.all_play').hide();
 			$('.all_play_stop').show();
 		}
 	}
-
-	
-//1)自動再生処理
-let all_play_flag = false;
-var TARGET;
 	
 	function all_play(){
 		all_play_flag = true;
@@ -779,15 +786,17 @@ var TARGET;
 		var next_slide = function(){
 
 			if(slide_now_num !== slide_num && all_play_flag){
-					$('.slider'+slide_ul_num).slick('slickNext');
-			   all_play_true();
-				}else{
-					//再生ボタン表示切替
-					$('.all_play').show();
-					$('.all_play_stop').hide();
-					
-					//最初のページに戻す処理　無効化					//$('.slider'+slide_ul_num).slick('slickNext');
-				}
+				$('.slider'+slide_ul_num).slick('slickNext');
+				all_play_true();
+			}else{
+				//再生ボタン表示切替
+				$('.all_play').show();
+				$('.all_play_stop').hide();
+				//audioタグ、スライド移動有効
+				$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
+				
+				//最初のページに戻す処理　無効化					//$('.slider'+slide_ul_num).slick('slickNext');
+			}
   		}
 		 
 		setTimeout(next_slide, TOTAL);
@@ -799,8 +808,12 @@ var TARGET;
 		all_play_flag = false;
 		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
 					TARGET.pause();
-			
-				}
+		}
+		
+		//audioタグ、スライド移動有効
+		$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
+		$('.all_play').show();
+		$('.all_play_stop').hide();
 }
 	
 //⑦停止ボタン押下後 不要？
@@ -810,10 +823,13 @@ var TARGET;
 		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
 			TARGET.currentTime = 0;
 			TARGET.pause();
-			
-				}
 
-}
+		}
+			//audioタグ、スライド移動有効
+			$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
+				$('.all_play').show();
+				$('.all_play_stop').hide();
+	}
 	
 
 

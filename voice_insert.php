@@ -15,9 +15,9 @@ if(
   !isset($_POST["file_name"]) || $_POST["file_name"]=="" ||
   !isset($_POST["slide_now_num"]) || $_POST["slide_now_num"]=="" ||
   !isset($_POST["slide_name"]) || $_POST["slide_name"]==""||
-  !isset($_POST["slide_id"]) || $_POST["slide_id"]==""
+  !isset($_POST["slide_group"]) || $_POST["slide_group"]==""
 ){
-  exit('ParamError');
+  exit('ParamError：POST受信失敗');
 }
 
 //1. POST受信
@@ -28,11 +28,36 @@ if(
 	//スライド名
 	$slide_name=$_POST["slide_name"];
 	//スライド名
-	$slide_id=$_POST["slide_id"];
+	$slide_group=$_POST["slide_group"];
 
- echo '　　スライド番号：'.$slide_now_num;
- echo '　　スライド名：'.$slide_name;
- echo '　　スライドID：'.$slide_id. '　　';
+//2. DB接続
+$pdo = db_con();//functions.phpから呼び出し
+//
+////3.スライドid取得SQL ★廃止
+//	//sqlのselect実行文
+//	$slide_table_sql = 'SELECT * FROM slide_table 
+//	WHERE user_id='. $_SESSION["user_id"].
+//		' AND slide_group = '.$slide_group.
+//		' AND slide_now_num = '.$slide_now_num.
+//		' ORDER BY slide_id DESC LIMIT 1';
+//
+//	$stmt = $pdo->prepare($slide_table_sql);
+//	$status = $stmt->execute();
+//	//実行後、エラーだったらfalseが返る
+//
+//if($status==false){
+//	queryError($stmt);
+//	exit('ParamError：スライドid取得SQL失敗');
+//}else{
+//	while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+//			$slide_id  = $r["slide_id"];
+//		}
+//}
+
+ echo '/slide_now_num：'.$slide_now_num;
+ echo '　　/slide_name：'.$slide_name;
+ echo '　　/slide_group：'.$slide_group. '　　';
+
 
 //Fileアップロードチェック
 if (isset($_FILES["sound_blob"]) && $_FILES["sound_blob"]["error"] == '0') {
@@ -47,11 +72,8 @@ if (isset($_FILES["sound_blob"]) && $_FILES["sound_blob"]["error"] == '0') {
 
     //***File名の変更***(ユニークファイル名)
     $extension = pathinfo($file_name, PATHINFO_EXTENSION); //拡張子取得(.wav)
-    $file_name = date("YmdHis")."_slide_id".$slide_id."_slide_num".$slide_now_num."_" .md5(session_id()) . "." . $extension;  //ユニークファイル名作成//md5：暗号化
-
-//	echo '　　音声ファイル名：'.$file_name;
+    $file_name = date("YmdHis")."_slide_group".$slide_group."_slide_num".$slide_now_num."_" .md5(session_id()) . "." . $extension;  //ユニークファイル名作成//md5：暗号化
 	
-    $img="";  //画像表示orError文字を保持する変数
 		
     // FileUpload [--Start--]
     if ( is_uploaded_file( $tmp_path ) ) {
@@ -71,16 +93,12 @@ if (isset($_FILES["sound_blob"]) && $_FILES["sound_blob"]["error"] == '0') {
             echo 'Error：'.$file_name . "が受信できませんでした。";
 }
 
-
-
-//2. DB接続
-$pdo = db_con();//functions.phpから呼び出し
-
-//３．SQLを作成(stmlの中で)
-$stmt = $pdo->prepare("INSERT INTO voice_table(voice_id, slide_id, slide_now_num, voice_data, create_date )VALUES(NULL, :slide_id, :slide_now_num, :voice_data, sysdate())");
-$stmt->bindValue(':slide_id', $slide_id, PDO::PARAM_INT); 
+//5．音声登録SQL作成
+$stmt = $pdo->prepare("INSERT INTO voice_table(voice_id,  slide_group, slide_now_num, voice_data, user_id, create_date )VALUES(NULL, :slide_group , :slide_now_num, :voice_data, :user_id, sysdate())");
+$stmt->bindValue(':slide_group', $slide_group, PDO::PARAM_INT); 
 $stmt->bindValue(':slide_now_num', $slide_now_num, PDO::PARAM_INT);
 $stmt->bindValue(':voice_data', $file_name, PDO::PARAM_STR);
+$stmt->bindValue(':user_id', $_SESSION["user_id"], PDO::PARAM_INT);
 $status = $stmt->execute();
 
 //実行後、エラーだったらfalseが返る
@@ -94,18 +112,6 @@ if($status==false){
 	queryError($stmt);
 }
 
-//ポイント：ajaxの場合、header("Location～は不要
-//else{	
-//	if(!isset($_SESSION["chk_ssid"]) || 
-//	   $_SESSION["chk_ssid"] != session_id()
-//	  ){
-//		  header("Location: home.php");//スペース必須
-//		  exit;//おまじない
-//	}else{
-//		  header("Location: home.php");//スペース必須
-//		  exit;//おまじない
-//	}
-//}	
 
 
 ?>
