@@ -144,21 +144,36 @@ for($i=1; $i <= $view_slide_num; $i++){
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+ 
+<link href="css/presentation.css" rel="stylesheet">
+
+ 
+<!-- Include jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+
+
+<link rel="stylesheet" href="rangeslider.js-2.3.0/rangeslider.css">
+<script src="rangeslider.js-2.3.0/rangeslider.js"></script>
+
+
+
+
+
 
 <!--bootstrap3-->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-   <link href="css/bootstrap.min.css" rel="stylesheet">
-   <link href="css/toro.css" rel="stylesheet">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	
-	<script src="js/bootstrap.min.js"></script>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<script src="js/bootstrap.min.js"></script>
 <!--bootstrap3-->
 
 <!--slick-->
-	<link rel="stylesheet" href="slick-1.8.0/slick/slick.css">
-	<link rel="stylesheet" href="slick-1.8.0/slick/slick-theme.css">
-	<script src="slick-1.8.0/slick/slick.min.js"></script>
+<link rel="stylesheet" href="slick-1.8.0/slick/slick.css">
+<link rel="stylesheet" href="slick-1.8.0/slick/slick-theme.css">
+<script src="slick-1.8.0/slick/slick.min.js"></script>
 <!--slick-->
  
   <title>home</title>
@@ -288,11 +303,15 @@ for($i=1; $i <= $view_slide_num; $i++){
 				<div class="slider0">
 				<div class="sample"><img src="img/slide_sample.png" class="img-responsive img-rounded slide sample" alt="サンプル画像" ></div>
 				<div class="sample"><img src="img/slide_sample1.png" class="img-responsive img-rounded slide sample" alt="サンプル画像1" ></div>
-				<div id="slide2"><img src="img/slide_sample2.png" class="img-responsive img-rounded slide" alt="サンプル画像2" ></div>
-				<div id="slide3"><img  src="img/slide_sample3.png" class="img-responsive img-rounded slide" alt="サンプル画像3" ></div>
 				</div>
 			</div>
 			<div class="db_slide" ><?=$view_slide?></div>
+		</div>
+		<div class="slidebar_area">
+
+			<input type="range" min="0" max="100" value="0" data-rangeslider>
+			<output></output>
+
 		</div>
 	</div>
 
@@ -306,8 +325,54 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 
 <script>
-//①スライドUL機能-----------------------------------
-
+//rangeslider.js-2.3.0
+$(function() {
+  var $document   = $(document),
+    selector    = '[data-rangeslider]',
+    $element    = $(selector);
+	
+  function valueOutput(element) {
+    var value = element.value,
+      output = element.parentNode.getElementsByTagName('output')[0];
+      output.innerHTML = value;
+  }
+	
+  for (var i = $element.length - 1; i >= 0; i--) {
+    valueOutput($element[i]);
+  };
+	
+  $document.on('change', 'input[type="range"]', function(e) {
+    valueOutput(e.target);
+  });
+	
+  $element.rangeslider({
+    polyfill: false,
+    onInit: function() {},
+    onSlide: function(position, value) {
+//      console.log('onSlide');
+//      console.log('position: ' + position, 'value: ' + value);
+    },
+    onSlideEnd: function(position, value) {
+//      console.log('onSlideEnd');
+//      console.log('position: ' + position, 'value: ' + value);
+    }
+  });
+});
+	
+//①スライドUL機能-----------------------------------	
+$("[slider-volume]")
+.each(function() {
+    var input = $(this);
+    $("<span>")
+    .addClass("output")
+    .insertAfter($(this));
+})
+.bind("slider:ready slider:changed", function( event, data) {
+    $(this)
+    .nextAll(".output:first")
+    .html(data.value.toFixed(3));  // 数値表示の小数点以下数
+}); 
+	
 //グローバル変数
 let slide_now_num ='';//現在のスライド番号
 let slide_num ='';//スライド総数
@@ -745,10 +810,8 @@ var TARGET;
 			all_play_stop_tmp();
 		}else{
 			all_play();
-			//audioタグ無効
-			$('audio, .slick-arrow ,.db_slide').css("pointer-events", "none");
-			$('.all_play').hide();
-			$('.all_play_stop').show();
+			//audioタグ、スライド遷移無効、再生ボタン切り替え
+			all_play_btn_start();
 		}
 	}
 	
@@ -789,11 +852,8 @@ var TARGET;
 				$('.slider'+slide_ul_num).slick('slickNext');
 				all_play_true();
 			}else{
-				//再生ボタン表示切替
-				$('.all_play').show();
-				$('.all_play_stop').hide();
 				//audioタグ、スライド移動有効
-				$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
+					all_play_btn_stop();
 				
 				//最初のページに戻す処理　無効化					//$('.slider'+slide_ul_num).slick('slickNext');
 			}
@@ -811,9 +871,7 @@ var TARGET;
 		}
 		
 		//audioタグ、スライド移動有効
-		$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
-		$('.all_play').show();
-		$('.all_play_stop').hide();
+			all_play_btn_stop();
 }
 	
 //⑦停止ボタン押下後 不要？
@@ -826,14 +884,24 @@ var TARGET;
 
 		}
 			//audioタグ、スライド移動有効
-			$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
-				$('.all_play').show();
-				$('.all_play_stop').hide();
+			all_play_btn_stop();
 	}
 	
 
+function all_play_btn_start(){
+		//audioタグ、スライド移動無効、再生ボタン切り替え
+		$('audio, .slick-arrow ,.db_slide').css("pointer-events", "none");
+		$('.all_play').hide();
+		$('.all_play_stop').show();
+}
 
-
+function all_play_btn_stop(){
+		//audioタグ、スライド移動有効、再生ボタン切り替え
+		$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
+		$('.all_play').show();
+		$('.all_play_stop').hide();
+}
+	
 	
   </script>
   
