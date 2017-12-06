@@ -1,8 +1,6 @@
-body{
-	background: #ccffcc;
 
-}
 
+/*
 .play_disp{
 	border: 6px solid #fc0;
 	border-radius: 10px;
@@ -11,6 +9,22 @@ body{
 
 
 }
+
+*/
+
+.play_disp{
+	border: 6px solid #888;
+	border-radius: 10px;
+	margin: 30px 10px;
+	background: #dcdcdc;
+/*	width: 80%;*/
+	
+	
+
+
+}
+
+/*
 
 p{
 	color: #a50;
@@ -22,8 +36,9 @@ p{
 	border: 3px solid #fc0;
 	border-radius: 10px;
 	font-family:"HGP創英角ﾎﾟｯﾌﾟ体";
-/*	margin-left: 10px;*/
+	margin-left: 10px;
 }
+*/
 
 h3{
 	color: #888;
@@ -54,7 +69,7 @@ h3{
 .slide{
 	max-width: 90%;
 /*	max-height: 100%;*/
-	border: 3px solid #fc0;
+	border: 10px solid #888;
 	margin: 10px auto;
 }
 
@@ -78,7 +93,22 @@ label{
 }
 
 .slidebar_area{
-	margin-top: 10px;
+	margin-top: 20px;
+	margin-bottom: 30px;
 	
+}
+
+#time_area{
+	display:flex;
+	
+}
+
+.slide_info ,.icon_info{
+	background-color: #888;
+	color: #fff;
+	border-radius: 10px;
+	width: 95%;
+	font-size: 20px;
+	margin: 10px auto;
 	
 }

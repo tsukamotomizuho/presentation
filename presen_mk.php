@@ -78,7 +78,9 @@ $file_dir_path = "upload/";  //画像ファイル保管先
 //スライド番号ごとに取り出す
 	$view_voice = '';//html表示用
 	$view_voice_id   = "なし";
-	$view_voice_copy=''; //デバック用
+	$view_voice_data_copy =''; //デバック用
+	$view_voice_time_copy    ='';
+	$voice_file_dir_path = "upload_sound/";  //画像ファイル保管先
 
 for($i=1; $i <= $view_slide_num; $i++){
 		
@@ -121,19 +123,22 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 				$view_voice_id      = $r["voice_id"];
 				$view_voice_data    = $r["voice_data"];
-				$view_voice_copy    .= $r["voice_data"].'/';
+				$view_voice_data_copy    .= $r["voice_data"].'/';
 		  		//$slide_now_num = $iだから不要
+				$view_voice_time    = $r["voice_time"];
+				$view_voice_time_copy    .= $r["voice_time"].'/';
 
 				$view_voice .= '<div id="slide_now_num_'.$i.'" style="display: block;">';//開始タグ
 				$view_voice .= 'スライド'.$i.'枚目の音声';
-				$view_voice .= '<audio id="slide_now_num_'.$i.'_audio" controls="" src="" ></audio>';
+				$view_voice .= '<audio id="slide_now_num_'.$i.'_audio" controls="" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
 				$view_voice .= '</div>';//終了タグ
 			}
 		}  
     }
     /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
   else {
-	  $view_voice_copy    .= $r["voice_data"].'/';
+	  $view_voice_data_copy      .= $r["voice_data"].'/';
+	  $view_voice_time_copy .=  '3000/';
     }
   }
 }
@@ -154,11 +159,13 @@ for($i=1; $i <= $view_slide_num; $i++){
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 
-
+<!--rangeslider.js スライダーバーのライブラリ読み込み-->
 <link rel="stylesheet" href="rangeslider.js-2.3.0/rangeslider.css">
 <script src="rangeslider.js-2.3.0/rangeslider.js"></script>
 
 
+<!--recorder.js 音声録音ライブラリ読み込み-->
+ <script src="Recorderjs-master/dist/recorder.js"></script>
 
 
 
@@ -201,7 +208,7 @@ for($i=1; $i <= $view_slide_num; $i++){
   <div class="row">
 	<div class="col-xs-4 col-sm-3 select_div" >
 		<div>
-			<div class="alert alert-warning">
+			<div class="icon_info">
 			  <strong><?=$_SESSION["user_name"]?>さん</strong> 
 		</div>
 
@@ -215,12 +222,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<h4><span class="label label-warning btn_effect">①スライド登録(フォルダ)</span></h4>
 			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
 		</label>
-<!--
-		<label for="save" >
-			<h4><span class="label label-warning btn_effect_slde">②スライドをDB登録(ajax)</span></h4>
-			<button type="button" id="save" onclick="slide_ul()" style="display:none;"></button>
-		</label>
--->
+
 	</form>
 	
 	<form id="update_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
@@ -294,7 +296,7 @@ for($i=1; $i <= $view_slide_num; $i++){
    
 		
 	<div class="col-xs-7 col-sm-8" >
-		<div class="alert alert-warning">
+		<div class="slide_info">
 			<div id="slide_name">スライド名：</div>
 			<div class="slick-counter">現在のスライド：<span class="current"></span> 枚目/ <span class="total"></span>枚中</div>
 		</div>
@@ -309,8 +311,10 @@ for($i=1; $i <= $view_slide_num; $i++){
 		</div>
 		<div class="slidebar_area">
 
-			<input type="range" min="0" max="100" value="0" data-rangeslider>
+			<input id="rangeslider" type="range" min="0" max="100" value="0" data-rangeslider>
 			<output></output>
+			<div id="time_area"><div id='now_time'>0:00</div>/<div id='all_time'>0:00</div></div>
+
 
 		</div>
 	</div>
@@ -325,39 +329,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 
 <script>
-//rangeslider.js-2.3.0
-$(function() {
-  var $document   = $(document),
-    selector    = '[data-rangeslider]',
-    $element    = $(selector);
-	
-  function valueOutput(element) {
-    var value = element.value,
-      output = element.parentNode.getElementsByTagName('output')[0];
-      output.innerHTML = value;
-  }
-	
-  for (var i = $element.length - 1; i >= 0; i--) {
-    valueOutput($element[i]);
-  };
-	
-  $document.on('change', 'input[type="range"]', function(e) {
-    valueOutput(e.target);
-  });
-	
-  $element.rangeslider({
-    polyfill: false,
-    onInit: function() {},
-    onSlide: function(position, value) {
-//      console.log('onSlide');
-//      console.log('position: ' + position, 'value: ' + value);
-    },
-    onSlideEnd: function(position, value) {
-//      console.log('onSlideEnd');
-//      console.log('position: ' + position, 'value: ' + value);
-    }
-  });
-});
+
 	
 //①スライドUL機能-----------------------------------	
 $("[slider-volume]")
@@ -576,19 +548,6 @@ function slide_update(){
 
 function slde_update_all(){
 
-//	let fd = new FormData($('#upfile_form').get(0));
-//	
-//	$.ajax({
-//		type: 'POST',
-//		url: 'slide_insert.php',
-//		data: fd,
-//		processData: false,
-//		contentType: false
-//	}).done(function(data) {
-//       console.log(data);
-//	console.log('スライド登録成功');
-//	});
-
 }
 	
 
@@ -598,37 +557,19 @@ function slde_update_all(){
 //グローバル変数
 	
 	//音声データファイル名
-	let view_voice_data ='<?=$view_voice_copy?>';
+	let voice_data ='<?=$view_voice_data_copy?>';
+	let voice_data_split = voice_data.split('/');
 	console.log('取得した音声データ：');
-	console.log(view_voice_data);
-	let voice_data_split = view_voice_data.split('/');
 	console.log(voice_data_split);
-	
 	
 	//DBの音声の有無チェック＆DB取得音声を表示
 	let db_voice_chk = '<?=$view_voice_id?>' ;
 	console.log("DBの音声有無チェック(voice_id)",db_voice_chk);
 
 	if(db_voice_chk != 'なし'){
-		
-		//1)phpで作成したタグを挿入
+		//phpで作成したタグを挿入
 		$('#recordingslist').append('<?=$view_voice?>');
 		console.log("slide_num：",slide_num);
-		
-		//2)タグに情報を追記
-		for (let y = 0; y < slide_num ; y++){
-				
-			// divタグ用番号
-			let div_slide_now_num = y+1;
-			//音声データ格納先
-			let voice_data_path = 'upload_sound/'+voice_data_split[y];
-			
-			console.log('スライド番号：',div_slide_now_num,'、voice_data_path：',voice_data_path);
-			//var url = URL.createObjectURL(blob);
-			$('#slide_now_num_'+div_slide_now_num+'>audio').attr('src', voice_data_path);
-
-			
-			}
 			
 	   }
 	
@@ -689,7 +630,6 @@ function slde_update_all(){
     recorder && recorder.exportWAV(function(blob) {
 	
 	console.log('音声データ：',blob);
-	voice_ul(blob);
 		
 	 //音声データを仮想urlに変換(セッション内のみ有効)
       var url = URL.createObjectURL(blob);
@@ -724,6 +664,16 @@ function slde_update_all(){
       div.appendChild(au);
       div.appendChild(hf);
       recordingslist.appendChild(div);
+		
+	var audio = new Audio(); // audioの作成
+	audio.src = url; // 音声ファイルの指定
+	audio.load(); // audioの読み込み 
+	audio.addEventListener('loadedmetadata',function(e) {
+		let voice_time = audio.duration;
+		console.log('時間：',voice_time); // 総時間の取得
+		voice_ul(blob,voice_time);//音声アップロード
+	});
+	
     });
   }
 
@@ -747,7 +697,7 @@ function slde_update_all(){
 		});
 	  };
 	
-function voice_ul(soundBlob){
+function voice_ul(soundBlob,voice_time){
 
 	//送信データ作成
 	var fd = new FormData();
@@ -758,7 +708,8 @@ function voice_ul(soundBlob){
 		fd.append('slide_name', slide_name);
 		fd.append('slide_group', slide_group);
 		fd.append('slide_now_num', slide_now_num);
-
+		fd.append('voice_time', voice_time*1000);
+	
 	$.ajax({
 		type: 'POST',
 		url: 'voice_insert.php',
@@ -797,13 +748,47 @@ function voice_ul(soundBlob){
 	}
 
 
+//スライド時間取得処理
+//for文×durationで一枚ずつ取得⇒失敗
+//録音時に音声時間を取得して、DBに登録して、取得する方法に変更
 
+	//音声データ時間
+	let voice_time_all = 0;//総和
+	let voice_time ='<?=$view_voice_time_copy?>';
+	let voice_time_split = voice_time.split('/');	
+
+	//先頭にダミーを追加(スライド番号に合わせる)
+	voice_time_split.unshift(0);
+	voice_time_split.pop();//末尾を削除
+	console.log('取得した音声時間：');
+	console.log(voice_time_split);
+	
+	for(var i =1; i < voice_time_split.length; i++){
+		console.log(Number(voice_time_split[i]));
+		voice_time_all += Number(voice_time_split[i]);
+	};
+	console.log('voice_time_all：',voice_time_all/1000);	
+	let voice_time_all_view = toHms(voice_time_all/1000);
+	$('#all_time').html(voice_time_all_view);
+	$('#rangeslider').attr('max',voice_time_all);
+	
+
+	
+	
+	//スライダーバー(全体)動作★ここから★
+	$('#rangeslider').val(100).change();
+	//NOW_allを絶えず更新する
+	
 //	⑥自動再生/一時停止ボタン押下後
 
 //1)自動再生処理
 let all_play_flag = false;
-var TARGET;
+let TARGET;
+let default_audio_time = 3000;//デフォルトの音声再生時間(3s)
 
+
+
+	
 	function all_play_btn(){
 		
 		if(all_play_flag){
@@ -814,20 +799,23 @@ var TARGET;
 			all_play_btn_start();
 		}
 	}
-	
+
+
 	function all_play(){
+
 		all_play_flag = true;
-		all_play_true();
+		all_play_true();		
+
 	}
-		
+
 	function all_play_true(){
-		console.log('音声存在チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null);
-		
 		var TOTAL = 0;
+
 		TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');
 
-		if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
-			
+		console.log('音声存在チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null,TARGET);
+		
+		if(TARGET != null){
 			
 			TARGET.play();
 			//audioタグシークバー同期処理
@@ -840,7 +828,7 @@ var TARGET;
 			console.log('TOTAL：',TOTAL);
 
 		}else{
-			TOTAL = 3000;
+			TOTAL = default_audio_time;
 			console.log('TOTAL：',TOTAL);
 			//デフォルト3s
 		}
@@ -901,11 +889,70 @@ function all_play_btn_stop(){
 		$('.all_play').show();
 		$('.all_play_stop').hide();
 }
+
+	
+	
+
+
+	
+function toHms(t) {
+	var hms = "";
+	var h = t / 3600 | 0;
+	var m = t % 3600 / 60 | 0;
+	var s = Math.round(t % 60);
+
+	if (h != 0) {
+		hms = h + ":" + padZero(m) + ":" + padZero(s);
+	} else if (m != 0) {
+		hms = m + ":" + padZero(s);
+	} else {
+		hms = "00:" + padZero(s) ;
+	}
+
+	return hms;
+
+	function padZero(v) {
+		if (v < 10) {
+			return "0" + v;
+		} else {
+			return v;
+		}
+	}
+}
+
+		
+//スライド全体のスライダー
+//rangeslider.js-2.3.0 を使用
+
+$('input[type="range"]').rangeslider({
+	polyfill: false,
+	update: true,
+	
+    // Callback function スライダー起動時
+    onInit: function() {
+		$('output').html(0);
+
+		
+	},
+	
+    // Callback function　スライダー移動時
+    onSlide: function(position, value) {
+
+		let output = $('#rangeslider').val();
+		console.log('onSlide：',output);
+		$('output').html(output);
+		
+	},
+	
+    // Callback function() スライダー停止時
+    onSlideEnd: function(position, value) {
+		
+		
+	}
+});
 	
 	
   </script>
   
-<!--recorder.js 音声録音ライブラリ読み込み-->
- <script src="Recorderjs-master/dist/recorder.js"></script>
 </body>
 </html>

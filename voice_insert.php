@@ -6,8 +6,8 @@ session_start();
 include("functions.php");
 //ssidChk();//セッションチェック関数
 
-// echo var_dump($_POST);//filenameはこれで表示
-// echo var_dump($_FILES);//blobデータはこれで表示
+ echo var_dump($_POST);//filenameはこれで表示
+ echo var_dump($_FILES);//blobデータはこれで表示
 
 
 //入力チェック(受信確認処理追加)
@@ -15,7 +15,8 @@ if(
   !isset($_POST["file_name"]) || $_POST["file_name"]=="" ||
   !isset($_POST["slide_now_num"]) || $_POST["slide_now_num"]=="" ||
   !isset($_POST["slide_name"]) || $_POST["slide_name"]==""||
-  !isset($_POST["slide_group"]) || $_POST["slide_group"]==""
+  !isset($_POST["slide_group"]) || $_POST["slide_group"]=="" ||
+  !isset($_POST["voice_time"]) || $_POST["voice_time"]==""
 ){
   exit('ParamError：POST受信失敗');
 }
@@ -27,8 +28,10 @@ if(
 	$slide_now_num=$_POST["slide_now_num"];
 	//スライド名
 	$slide_name=$_POST["slide_name"];
-	//スライド名
+	//スライドグループ
 	$slide_group=$_POST["slide_group"];
+	//音声時間
+	$voice_time=$_POST["voice_time"];
 
 //2. DB接続
 $pdo = db_con();//functions.phpから呼び出し
@@ -57,6 +60,7 @@ $pdo = db_con();//functions.phpから呼び出し
  echo '/slide_now_num：'.$slide_now_num;
  echo '　　/slide_name：'.$slide_name;
  echo '　　/slide_group：'.$slide_group. '　　';
+ echo '　　/voice_time：'.$voice_time. '　　';
 
 
 //Fileアップロードチェック
@@ -94,10 +98,11 @@ if (isset($_FILES["sound_blob"]) && $_FILES["sound_blob"]["error"] == '0') {
 }
 
 //5．音声登録SQL作成
-$stmt = $pdo->prepare("INSERT INTO voice_table(voice_id,  slide_group, slide_now_num, voice_data, user_id, create_date )VALUES(NULL, :slide_group , :slide_now_num, :voice_data, :user_id, sysdate())");
+$stmt = $pdo->prepare("INSERT INTO voice_table(voice_id,  slide_group, slide_now_num, voice_data, voice_time, user_id, create_date )VALUES(NULL, :slide_group , :slide_now_num, :voice_data, :voice_time, :user_id, sysdate())");
 $stmt->bindValue(':slide_group', $slide_group, PDO::PARAM_INT); 
 $stmt->bindValue(':slide_now_num', $slide_now_num, PDO::PARAM_INT);
 $stmt->bindValue(':voice_data', $file_name, PDO::PARAM_STR);
+$stmt->bindValue(':voice_time', $voice_time, PDO::PARAM_INT);
 $stmt->bindValue(':user_id', $_SESSION["user_id"], PDO::PARAM_INT);
 $status = $stmt->execute();
 
