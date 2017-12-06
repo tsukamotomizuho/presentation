@@ -1,5 +1,5 @@
 # presentation
-最新リビジョン：r28
+最新リビジョン：r27
 
 ・環境(サーバ)：xammp
 ・DB情報：presentation_db_r3.sql
