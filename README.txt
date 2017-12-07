@@ -1,8 +1,10 @@
 # presentation
 最新リビジョン：r28
 
+★Issuesにご相談事項あり★2017/12/7
+
 ・環境(サーバ)：xammp
-・DB情報：presentation_db_r3.sql
+・DB情報：presentation_db_r4.sql
 
 --------------------------------------------
 ■ミニマム機能実装 進捗
