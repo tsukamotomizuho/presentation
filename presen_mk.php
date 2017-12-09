@@ -228,17 +228,17 @@ for($i=1; $i <= $view_slide_num; $i++){
 	<form id="update_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="update" >
 			<h4><span class="label label-warning btn_effect">②スライドを変更</span></h4>
-			<button type="button" id="update" onclick="slide_update()" style="display:none;"></button>
+			<button type="button" id="update"  style="display:none;"></button>
 		</label>
 		<div id="update_type" style="display:none;">
 
-		<label for="slde_update_one" >
+		<label for="slide_update_one" >
 			<h5><span class="label label-warning btn_effect" style ="margin:10px 10px;">1)今のスライドだけ変更【未実装】</span></h5>
-			<input type="file" id="slde_update_one"  name="slde_update_one" style="display:none"/>
+			<input type="file" id="slide_update_one" name="slide_update_one" style="display:none"/>
 		</label>
-		<label for="slde_update_all" >
+		<label for="slide_update_all" >
 			<h5><span class="label label-warning btn_effect" style ="margin:10px 10px;">2)スライド一括変更(フォルダごと)【未実装】</span></h5>
-			<input type="file" id="slde_update_all"  name="slde_update_all[]" webkitdirectory  style="display:none;"/>
+			<input type="file" id="slide_update_all"  name="slide_update_all[]" webkitdirectory  style="display:none;"/>
 		</label>
 	
 			</div>
@@ -276,10 +276,12 @@ for($i=1; $i <= $view_slide_num; $i++){
    	</label>
 -->
 
+<!--
  	<label for="all_play_stop" >
  		<h4><span class="label label-success btn_effect">⑦停止</span></h4>		  
   		<button id="all_play_stop" onclick="all_play_stop();"  style="display:none;">stop</button>
    	</label>
+-->
 
 <!--
  	<label for="all_play_stop_tmp" >
@@ -332,18 +334,6 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 	
 //①スライドUL機能-----------------------------------	
-$("[slider-volume]")
-.each(function() {
-    var input = $(this);
-    $("<span>")
-    .addClass("output")
-    .insertAfter($(this));
-})
-.bind("slider:ready slider:changed", function( event, data) {
-    $(this)
-    .nextAll(".output:first")
-    .html(data.value.toFixed(3));  // 数値表示の小数点以下数
-}); 
 	
 //グローバル変数
 let slide_now_num ='';//現在のスライド番号
@@ -352,40 +342,49 @@ let slide_id ='';//スライドid
 let slide_group ='';//スライドグループid
 let slide_name = '';
 
-	//DBのスライド有無チェック
-	//メモ：javascriptでphpを呼び出す際は、''でくくる
-	slide_id ='<?=$view_slide_id?>';
-	console.log("DBのスライド有無チェック",slide_id);
+//DBのスライド有無チェック
+//メモ：javascriptでphpを呼び出す際は、''でくくる
+	
+slide_id ='<?=$view_slide_id?>';
+console.log("DBのスライド有無チェック",slide_id);
 
-	if(slide_id != 'なし'){
-		//スライドデバッグ用
-		slide_name ='<?=$view_slide_name?>';
-		let view_slide_data ='<?=$view_slide_data_copy?>';
-		let view_slide_num = '<?=$view_slide_num?>';
-		slide_group = '<?=$view_slide_group?>';
+if(slide_id != 'なし'){
+	//スライドデバッグ用
+	slide_name ='<?=$view_slide_name?>';
+	let view_slide_data ='<?=$view_slide_data_copy?>';
+	let view_slide_num = '<?=$view_slide_num?>';
+	slide_group = '<?=$view_slide_group?>';
 
-		console.log('スライド名',slide_name);
-		console.log('スライドデータ',view_slide_data);
-		console.log('スライドid',slide_id);
-		console.log('スライドグループid',slide_group);
-		console.log('スライド総数',view_slide_num);
+	console.log('スライド名',slide_name);
+	console.log('スライドデータ',view_slide_data);
+	console.log('スライドid',slide_id);
+	console.log('スライドグループid',slide_group);
+	console.log('スライド総数',view_slide_num);
 
-	   $('.sample_slide').remove();
-	   $('#slide_name').append(slide_name);
-		
-		slide_num = view_slide_num;
-		
-	   }else{
-	   		$('.db_slide').remove();
-		   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
-	   }
+   $('.sample_slide').remove();
+   $('#slide_name').append(slide_name);
+
+	slide_num = view_slide_num;
+
+   }else{
+		$('.db_slide').remove();
+	   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
+   }
+
 
    
-//スライド設置関数 （slick.jsを使用）
-	$(function () {
+$(function () {
+	//スライド起動関数 
+	slickjs();
+
+});
+
+
+//スライド起動関数 （slick.jsを使用）
+function slickjs(){
 	
 	  //現在のスライド枚数表示処理
-	  $('.slider0').on('init', function(event, slick) {
+	  $('.slider'+slide_ul_num).on('init', function(event, slick) {
 			$('.current').text(slick.currentSlide + 1);
 			$('.total').text(slick.slideCount);
 		  
@@ -397,14 +396,30 @@ let slide_name = '';
 		  
 			//audioタグ表示切替処理処理
 			  voice_display(slide_num,slide_now_num);
+		  
+		//スライド手動移動検知処理1(slick-arrowボタン押下時)
+		//rangeslider_change_eachtop()で使用
+		$('.slick-arrow').on('click',function(){
+			slick_manual_flag = true;
+		});
+		
+		//スライド手動移動検知処理2(マウスドラッグまたはスワイプされた時のイベント)
+		$('.slider'+slide_ul_num).on('swipe', function(slick, direction){
+			//スライド手動移動フラグ:false
+			slick_manual_flag = true;
+		});
+ 
 	  })
 		  .slick({
 			// option here...
+//		    // マウスドラッグでスライドの切り替えをするか [初期値:true]
+//		  	draggable: false,
 	  })
 		  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
 			$('.current').text(nextSlide + 1);
 			slide_now_num = nextSlide + 1;
 			console.log('現在のスライド番号：',slide_now_num);
+
 
 		//audioタグ表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
@@ -412,12 +427,10 @@ let slide_name = '';
 		//スライダーバー(全体)移動 関数(各スライドの頭出し用)
 		rangeslider_change_eachtop();
 
-	  });	
-	});
-
-
+	  });
 	
-	
+}
+
 	
 //グローバル関数	
 	//アップロード回数
@@ -425,41 +438,61 @@ let slide_name = '';
 	//スライドデータ(DB登録用)
 	let	slide_data_ul;
 	
-//①ファイルUL押下(DB登録も含む)
+//①ファイル初期UL押下(DB登録も含む)
 $('#upfile').change(function(){
-	$('.slider'+slide_ul_num).remove();//サンプル削除
-//	$('#rec , #rec_stop').prop("disabled", true);
-	$('.btn_effect').css("pointer-events", "none");
 
-	//前回ULしたスライドorサンプルスライド削除   
-	if(slide_ul_num > 0){
-		$('.slider'+slide_ul_num).remove();
-	}
+	//1)スライドUL取得処理
+	slide_ul_get(this.files);
+
+	//2)DB登録処理(ajax)
+	slide_ul_db();
+	
+});
+
+
+//1)スライドUL-取得処理
+function slide_ul_get(this_files){
+
+	//前スライド削除
+	$('.slider'+slide_ul_num).remove();
 	
 	slide_ul_num++;
 	console.log('スライドULチェック',slide_ul_num);//全く同じファイルを連続ULするとカウントされない。
 	
 	//スライドデータ(DB登録用)
-	console.log('this.files',this.files);
-	slide_data_ul = this.files;
+	console.log('this_files',this_files);
+	slide_data_ul = this_files;
 	
 	//スライドデータ(html表示用)
 	let slide_data ='';
 	
 	//ULするスライドの枚数
-	let new_slide_num = this.files.length -1;
+	let new_slide_num = this_files.length -1;
 	
 	//スライド全体
 	let slider_add = '';
-	slider_add += '<div class="slider'+slide_ul_num+'">';	
-
-		
+	slider_add += '<div class="slider'+slide_ul_num+'">';
+	
+	//スライダー(全体)更新処理
+	voice_time_split = [];
+	voice_time = '';
+	for(let i =0;i <= new_slide_num;i++){
+		voice_time += default_audio_time+'/';
+	}
+	
+	//音声リスト作成
+	voice_time_split_mk(voice_time);
+	//音声総時間の表示
+	voice_time_all_disp(voice_time_split);
+	//スライダー更新
+	$('input[type="range"]').rangeslider('update', true);
+	
 	//ULされたスライドのhtmlを作成
-	for (let i = 0; i < this.files.length; i++) {
+	for (let i = 0; i < this_files.length; i++) {
 
 		// 選択されたファイル情報を取得
-		let file = this.files[i];
-		
+		let file = this_files[i];
+
 		//アップロードされたファイル名からスライド名を取得
 		slide_name = file['webkitRelativePath'].split('/')[0];
 
@@ -484,50 +517,20 @@ $('#upfile').change(function(){
 				$(".slide_area").prepend(slider_add);
 				//前回の音声削除
 				$("#recordingslist>div").remove();
-				//新しくslick関数を動作させる
-				$('.slider'+slide_ul_num).on('init', function(event, slick) {
-					
-				$('.current').text(slick.currentSlide + 1);
-				$('.total').text(slick.slideCount);
 
-				console.log('slide_num',slick.slideCount);
+				//新しいスライド起動 
+				slickjs();
 
-				//audioタグ表示切替処理処
-				  voice_display(slide_num,slide_now_num);
-
-			  })
-				  .slick({
-					// option here...
-			  })
-				  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
-							$('.current').text(nextSlide + 1);
-							slide_now_num = nextSlide + 1;
-							console.log('現在のスライド番号：',slide_now_num);
-					
-		//audioタグ表示切替処理処理
-		  voice_display(slide_num,slide_now_num);
-		  });
-		//スライダーバー(全体)移動 関数(各スライドの頭出し用)
-		rangeslider_change_eachtop();
-
-				
+			}
 		}
-	  }
 	}
-	
-	//DB登録処理(ajax)
-	slide_ul();
-	
-});
 
+}
 	
-//DB登録処理(ajax)
-function slide_ul(){
-	$('#rec ,#rec_stop').prop("disabled", false);
-	$('.btn_effect').css("pointer-events", "auto");
+//2)スライドUL-DB登録処理(ajax)
+function slide_ul_db(){
 	
 	let fd = new FormData($('#upfile_form').get(0));
-	
 	//$postで確認
 	fd.append('slide_name', slide_name);
 
@@ -545,6 +548,9 @@ function slide_ul(){
 	});
 }
 
+
+
+
 //②スライド変更
 function slide_update(){
 //	$('#rec ,#rec_stop').prop("disabled", false);
@@ -553,8 +559,10 @@ function slide_update(){
 	$('#update_type').toggle();
 }
 
-function slde_update_all(){
+//②スライド一括更新を選択
 
+function slide_update_all(){
+	
 }
 	
 
@@ -782,23 +790,29 @@ function voice_display(slide_num,slide_now_num){
 		//phpで取得した音声時間を代入
 		voice_time ='<?=$view_voice_time_copy?>';
 	   }else{
-		   for(let i =1;i <= slide_num;i++)
-		   voice_time += default_audio_time+'/';
+		   for(let i =1;i <= slide_num;i++){
+		   		voice_time += default_audio_time+'/';
+			}
 	   }
 
+	//音声リスト作成
+	voice_time_split_mk(voice_time);
+	//音声総時間の表示＆スライダー更新
+	voice_time_all_disp(voice_time_split);
+	
+	
+//音声リスト作成関数 
+function voice_time_split_mk(voice_time){
 	//音声時間リスト作成(配列：1~)
 	voice_time_split = voice_time.split('/');	
 	//先頭にダミーを追加(スライド番号に合わせる)
 	voice_time_split.unshift(0);
 	voice_time_split.pop();//末尾を削除
-
-	//音声総時間の表示＆スライダー更新
-	voice_time_all_disp(voice_time_split);
-
+}
 	
 //音声総時間の表示＆スライダー更新関数
 function voice_time_all_disp(voice_time_split){
-
+	
 	voice_time_all = 0;
 	
 	//音声時間リストを音声総和時間に変換
@@ -825,7 +839,7 @@ function voice_time_all_disp(voice_time_split){
 let all_play_flag = false;
 let TARGET;
 	
-function all_play_btn(){	
+function all_play_btn(){
 	if(all_play_flag){
 		all_play_stop_tmp();
 	}else{
@@ -834,27 +848,27 @@ function all_play_btn(){
 		all_play_btn_start();
 	}
 }
-
+	
 function all_play(){
 	all_play_flag = true;
-	all_play_true();		
+	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+	all_play_true(onSlideEnd_time);		
 }
 
-function all_play_true(){
-	var TOTAL = 0;
-
+function all_play_true(onSlideEnd_time){
 	TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');
 
-	console.log('音声存在チェック',document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null,TARGET);
+	console.log('音声存在チェック',TARGET != null,TARGET);
 
-	if(TARGET != null){
+	if(TARGET){
 
 		TARGET.play();
 		//audioタグシークバー同期処理
 		//シークバーが終了位置にあると、自動的に頭出ししてくれる。audio.jsの処理？
-
-		let NOW =TARGET.currentTime*1000;
-		TOTAL = TARGET.duration*1000;
+		
+		let NOW =TARGET.currentTime*1000 + onSlideEnd_time;
+		console.log('onSlideEnd_time：',onSlideEnd_time);
+		let TOTAL = TARGET.duration*1000;
 		TOTAL = TOTAL - NOW;
 		console.log('NOW：',NOW);
 		console.log('TOTAL：',TOTAL);
@@ -862,48 +876,45 @@ function all_play_true(){
 		//音声再生時スライダーバー(全体)同期
 		if(!TARGET.paused ){
 			TARGET.addEventListener("timeupdate", function() {
-
-				let NOW_all_disp = 0;
-				NOW_all_disp = NOW_all_set() + TARGET.currentTime*1000;
-
-				//スライダーバー(全体)移動
-				rangeslider_change(NOW_all_disp);
-
+				//ターゲット切り替え時のバグ防止用の判定処理
+				if(TARGET){
+					let NOW_all_disp = 0;
+					NOW_all_disp = NOW_all_set() + TARGET.currentTime*1000;
+					//スライダーバー(全体)移動
+					rangeslider_change(NOW_all_disp);
+				}
 			}, true);
 		}
-
+		setTimeout(next_slide, TOTAL);
 	}else{
-		TOTAL = default_audio_time;
+		let TOTAL = default_audio_time;//デフォルト3s
 		console.log('TOTAL：',TOTAL);
-		//デフォルト3s
 		
-		//音声再生時シークバー(全体)同期
-		PassSec = 0;
+	//音声再生時シークバー(全体)同期処理
+		//現在のスライダー位置を加算
+		PassSec = onSlideEnd_time;
+		// タイマーをセット(500ms間隔)
 		PassageID = setInterval('show_NOW_all_disp(0)',500);
-		// タイマーをセット(100ms間隔)
-
+		setTimeout(next_slide, TOTAL);
 	}
-	
-	var next_slide = function(){
+}
 
-		if(slide_now_num !== slide_num && all_play_flag){
-			$('.slider'+slide_ul_num).slick('slickNext');
-			all_play_true();
-		}else{
-			//audioタグ、スライド移動有効
-				all_play_btn_stop();
-				all_play_flag = false;
+var next_slide = function(){
+	if(slide_now_num !== slide_num && all_play_flag){
+		//次のスライドへ移動
+		$('.slider'+slide_ul_num).slick('slickNext');
+		all_play_true(0);
+	}else{
+		//audioタグ、スライド移動有効
+		all_play_btn_stop();
+		all_play_flag = false;
 
 //			最初のページに戻す処理　無効化
 //			$('.slider'+slide_ul_num).slick('slickNext');
-		}
 	}
-
-	setTimeout(next_slide, TOTAL);
-
 }
 
-//スライダーバー(全体)変化関数 (音声データがなかった時用)
+//スライダーバー(全体)遷移関数 (音声データがなかった時用)
 function show_NOW_all_disp(NOW_all_disp) {
 
 	PassSec += 500;
@@ -911,7 +922,13 @@ function show_NOW_all_disp(NOW_all_disp) {
 		NOW_all_disp = NOW_all_set() + PassSec;
 		//スライダーバー(全体)移動
 		rangeslider_change(NOW_all_disp);
+		console.log('スライダーバー位置',NOW_all_disp);
 	}else{
+		NOW_all_disp = NOW_all_set() + PassSec;
+		//スライダーバー(全体)移動
+		rangeslider_change(NOW_all_disp);
+		console.log('スライダーバー位置_last',NOW_all_disp);
+		//タイマークリア
 		clearInterval( PassageID );
 	}
 }
@@ -932,14 +949,28 @@ function rangeslider_change(NOW_all_disp){
 	$('#now_time').html(toHms(NOW_all_disp/1000));
 }
 
+
+
+//スライド手動移動フラグ
+let slick_manual_flag = false;
+	
 //スライダーバー(全体)移動 関数(各スライドの頭出し用)
 function rangeslider_change_eachtop(){
 	if(all_play_flag == false){
-		let NOW_all_disp = NOW_all_set();
-		//.rangesliderにてスライダー(全体)変更時の秒数加算
-		NOW_all_disp += onSlideEnd_output;
-		rangeslider_change(NOW_all_disp);
-		onSlideEnd_output = 0;
+		
+		if(slick_manual_flag){
+			//スライド手動移動のときは頭出し
+			let NOW_all_disp = NOW_all_set();
+			rangeslider_change(NOW_all_disp);
+		}else{
+			//スライダーバーでスライドさせたときは同期
+			let NOW_all_disp = NOW_all_set();
+			//.rangesliderにてスライダー(全体)変更時の秒数加算
+			NOW_all_disp += onSlideEnd_output().onSlideEnd_time;
+			rangeslider_change(NOW_all_disp);
+			//スライド手動移動フラグ:true(次からは頭出し)
+			slick_manual_flag = true;
+		}
 	}
 }
 	
@@ -956,16 +987,16 @@ function all_play_stop_tmp(){
 		clearInterval( PassageID );   // タイマーのクリア
 }
 
-//⑦停止ボタン押下後 不要？
-function all_play_stop(){
-	all_play_flag = false;
-	if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
-		TARGET.currentTime = 0;
-		TARGET.pause();
-	}
-	//audioタグ、スライド移動有効
-	all_play_btn_stop();
-}
+//⑦停止ボタン押下後 不要？⇒削除(スライダー(全体)があるため)
+//function all_play_stop(){
+//	all_play_flag = false;
+//	if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
+//		TARGET.currentTime = 0;
+//		TARGET.pause();
+//	}
+//	//audioタグ、スライド移動有効
+//	all_play_btn_stop();
+//}
 	
 
 //audioタグ、スライド移動無効、再生ボタン切り替え
@@ -982,7 +1013,8 @@ function all_play_btn_stop(){
 		$('.all_play_stop').hide();
 }
 
-//音声総和(表示用) 作成関数	
+
+//音声総時間(表示用) 作成関数	
 function toHms(t) {
 	var hms = "";
 	var h = t / 3600 | 0;
@@ -1008,20 +1040,15 @@ function toHms(t) {
 	}
 }
 	
-//スライド単体での秒数(rangeslider_change_eachtop()で使用)
-let onSlideEnd_output = 0;
+
 	
 //スライダーバー(全体)設置関数
 //rangeslider.js-2.3.0 を使用
 $('input[type="range"]').rangeslider({
 	polyfill: false,
-
-	
     // Callback function スライダー起動時
     onInit: function() {
 		$('output').html(0);
-
-		
 	},
 	
     // Callback function　スライダー移動時
@@ -1033,39 +1060,61 @@ $('input[type="range"]').rangeslider({
 		
 	},
 	
+	// Callback function() スライダー停止時
+	onSlideEnd: function(position, value) {
 
-	
-    // Callback function() スライダー停止時
-    onSlideEnd: function(position, value) {
-		//現在のスライド全体での秒数
-		let output = $('#rangeslider').val();
-		//スライド単体での秒数(rangeslider_change_eachtop()で使用)
-		onSlideEnd_output = output;
-		console.log('onSlideEnd：',output);
-		
-		//何枚目のスライドか算出する
-		let time = 0;//加算用
-		let output_slide_num=0;//算出したスライド番号(0から始まる)
-		
-		for(let i =1; i < slide_num; i++){
-			time += voice_time_split[i];
-			if(output > time  && output <= time +voice_time_split[i+1]){
-				output_slide_num = i;
-				onSlideEnd_output = output - time;
-			}
-			
-		}
-		
+			//スライド単体での秒数(他関数で使用)
+			let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+			let onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
+
 		if(!all_play_flag){
-			//スライド変更関数(0から始まる)
-	 		$('.slider'+slide_ul_num).slick('slickGoTo', output_slide_num);
-			console.log('スライダー(全体)で移動',output_slide_num+1);
+			//スライド手動移動フラグ:false
+			slick_manual_flag = false;
+			$('.slider'+slide_ul_num).slick('slickGoTo', onSlideEnd_slide_num);
+			console.log('スライダーで移動',onSlideEnd_slide_num +1);
+			
+			}
 		}
-	}
 });
 
 	
+//スライドバー移動時、スライド単体の秒数算出関数
+	//以下の関数で使用
+	//$('input[type="range"]').rangeslider(スライド移動)
+	//rangeslider_change_eachtop()
+	//all_play_true()
 	
+function onSlideEnd_output(){
+	
+	//現在のスライド全体での秒数
+	let output = $('#rangeslider').val();
+	
+	//スライド単体での秒数
+	let onSlideEnd_time = output;
+	//比較総時間用
+	let time = 0;
+	//算出したスライド番号(0から始まる、スライド番号より1小さい数)
+	let onSlideEnd_slide_num = 0;
+	
+	//何枚目のスライドか算出する
+	for(let i =0; i < slide_num; i++){
+		time += voice_time_split[i];
+		console.log('比較',output,time,time + voice_time_split[i+1]);
+		
+		//最後のスライドの場合、最終秒は最後のスライドに含める
+		if((output >= time  && output < (time + voice_time_split[i+1]))||(i == (slide_num - 1) && output == (time + voice_time_split[i+1]))){
+			onSlideEnd_slide_num = i;
+			onSlideEnd_time = output - time;
+		}
+	}
+	
+	onSlideEnd_time = Number(onSlideEnd_time);
+	
+	let onSlideEnd_return ={"onSlideEnd_time":onSlideEnd_time,"onSlideEnd_slide_num":onSlideEnd_slide_num};
+	console.log('onSlideEnd_return',onSlideEnd_return);
+	
+	return onSlideEnd_return;
+}
 	
 
 	
