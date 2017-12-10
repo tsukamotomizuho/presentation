@@ -247,50 +247,15 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</form>
 
 
-		  
-	<label for="rec" >
-		<h4><span class="label label-info btn_effect">③音声録音</span></h4>		  
-  		<button id="rec" onclick="startRecording(this);" style="display:none;">record</button>
-  	</label>
- 
- 	<label for="rec_stop" >
- 		<h4><span class="label label-info btn_effect">④録音停止(ajax)</span></h4>		  
-  		<button id="rec_stop" onclick="stopRecording(this);"  style="display:none;">stop</button>
-   	</label>
- 
-   	  	  
+	 <button  id="rec" type="button" class="btn btn-info" onclick="startRecording(this);">③音声録音</button>
+	 <button  id="rec_stop" type="button" class="btn btn-info" onclick="stopRecording(this);" style="display:none;">④録音停止</button>
+
   <h5>- Recordings status -</h5>
   <div id="log" style = "margin-bottom:10px;"></div>   	
   <div id="recordingslist"></div>
   
-  	<label for="all_play_btn" >
- 		<h4><span class="label label-success btn_effect all_play" style="display:block;">⑥自動再生</span></h4>
-		<h4><span class="label label-success btn_effect all_play_stop" style="display:none;">⑥一時停止</span></h4>	  
-  		<button id="all_play_btn" onclick="all_play_btn();"  style="display:none;">再生/一時停止</button>
-   	</label>
-   	
-<!--
- 	<label for="all_play" >
- 		<h4><span class="label label-success btn_effect">自動再生</span></h4>		  
-  		<button id="all_play" onclick="all_play();"  style="display:none;">start</button>
-   	</label>
--->
-
-<!--
- 	<label for="all_play_stop" >
- 		<h4><span class="label label-success btn_effect">⑦停止</span></h4>		  
-  		<button id="all_play_stop" onclick="all_play_stop();"  style="display:none;">stop</button>
-   	</label>
--->
-
-<!--
- 	<label for="all_play_stop_tmp" >
- 		<h4><span class="label label-success btn_effect">一時停止</span></h4>		  
-  		<button id="all_play_stop_tmp" onclick="all_play_stop_tmp();"  style="display:none;">stop</button>
-   	</label>
--->
- 
-
+  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();">⑥自動再生</button>
+  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;">⑦一時停止</button>
    	  	   	
 	</div>
 	<div class="col-xs-1 col-sm-1" >
@@ -440,6 +405,11 @@ $(function () {
 		voice_time_all_disp(voice_time_split);
 		//スライダー更新
 		$('input[type="range"]').rangeslider('update', true);
+	
+	
+		//audioタグ表示切替処理処理
+		  voice_display(slide_num,slide_now_num);
+
 });
 
 
@@ -515,10 +485,10 @@ function voice_time_all_disp(voice_time_split){
 	};
 	
 	console.log('音声時間リスト：',voice_time_split);
-	console.log('voice_time_all：',voice_time_all/1000);	
 
 	//音声総時間取得＆挿入
 	voice_time_all_html = toHms(voice_time_all/1000);
+	console.log('voice_time_all_html：',voice_time_all_html);	
 
 	//音声総時間挿入(html&max)
 	$('#all_time').html(voice_time_all_html);
@@ -658,8 +628,6 @@ function slide_update_all(){
 
 	
 //④音声録音機能-----------------------------------
-
-	
 	
   function __log(e, data) {
 	  console.log('音声ログ：',e,'  ',data || '');
@@ -682,35 +650,55 @@ function slide_update_all(){
 //    __log('Recorder initialised.');
   }
 
-	//録音開始
-  function startRecording(button) {
-	  
+	
+//音声録音フラグ
+let recording_flag = false;
+	
+//録音開始
+function startRecording(button) {
+
+	//音声録音フラグ
+	recording_flag = true;
+
 	//スライダーバー(全体)移動 関数(各スライドの頭出し用)
 	rangeslider_change_eachtop();
-	  
+
 	//録音関数
-    recorder && recorder.record();
-//    button.disabled = true;
-//    button.nextElementSibling.disabled = false;
+	recorder && recorder.record();
+
+	//録音ボタン表示切替処理＆他ボタン無効処理
+	$('#rec').toggle();  
+	$('#rec_stop').toggle();
+	$('audio, .slick-arrow ,.db_slide,.rangeslider ,#all_play ').css("pointer-events", "none");
 
 	// タイマーをセット(1000ms間隔)
 	PassSec = 0;
- 	PassageID = setInterval('show_voicelog()',1000);  
+	PassageID = setInterval('show_voicelog()',1000);  
 
-  }
+}
 
-	function show_voicelog() { 
-		PassSec++
-    __log('Recording...   ('+PassSec+'s)');
-	}
+function show_voicelog() { 
+	PassSec++
+	__log('Recording...   ('+PassSec+'s)');
+}
 	
 	//録音停止
-  function stopRecording(button) {
+function stopRecording(button) {
+
+	//音声録音フラグ
+	recording_flag = false;
+
     recorder && recorder.stop();
-//    button.disabled = true;
-//    button.previousElementSibling.disabled = false;
+
+	//録音ボタン表示切替処理＆他ボタン有効処理
+	$('#rec').toggle();  
+	$('#rec_stop').toggle();
+	$('audio, .slick-arrow ,.db_slide,.rangeslider, #all_play ').css("pointer-events", "auto");
+
     __log('Stopped recording.');
-	 clearInterval( PassageID );   // タイマーのクリア
+	  
+	 // タイマーのクリア
+	 clearInterval( PassageID );  
     
     // create WAV download link using audio data blob
     createDownloadLink();
@@ -846,7 +834,7 @@ function voice_display(slide_num,slide_now_num){
 
 
 	
-//	⑥自動再生/一時停止ボタン押下後
+//⑥自動再生/一時停止ボタン押下後
 	
 //1)自動再生処理
 let all_play_flag = false;
@@ -865,24 +853,32 @@ function all_play_btn(){
 function all_play(){
 	all_play_flag = true;
 	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+	
+	//スライダー(全体)=最終秒のとき、最初から再生する
+	if(onSlideEnd_output().onSlideEnd_slide_num+1 == slide_num && onSlideEnd_time == voice_time_split[slide_num]){
+		onSlideEnd_time = 0;
+		$('.slider'+slide_ul_num).slick('slickGoTo', 0);
+	}
+	
 	all_play_true(onSlideEnd_time);
-
 }
 
+
+
+	
 function all_play_true(onSlideEnd_time){
 	TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');
 
 	console.log('音声存在チェック',TARGET != null,TARGET);
 
 	if(TARGET){
-
+		TARGET.currentTime = onSlideEnd_time/1000;
+		
 		TARGET.play();
 		//audioタグシークバー同期処理
-		//シークバーが終了位置にあると、自動的に頭出ししてくれる。audio.jsの処理？
 		
-		let NOW =TARGET.currentTime*1000 + onSlideEnd_time;
-		console.log('onSlideEnd_time：',onSlideEnd_time);
-		let TOTAL = TARGET.duration*1000;
+		let NOW = TARGET.currentTime;
+		let TOTAL = TARGET.duration*1000+100;
 		TOTAL = TOTAL - NOW;
 		console.log('NOW：',NOW);
 		console.log('TOTAL：',TOTAL);
@@ -933,12 +929,15 @@ var next_slide = function(){
 function all_play_stop_tmp(){
 	if(TARGET){
 		TARGET.pause();
+	}else{
+		//音声データ未登録時のタイマーのクリア
+		clearInterval( PassageID );
 	}
+	
 	all_play_flag = false;
 	//audioタグ、スライド移動有効
 	all_play_btn_stop();
-	// タイマーのクリア
-	clearInterval( PassageID );   
+	
 }
 //スライダーバー(全体)遷移関数 (音声データがなかった時用)
 function show_NOW_all_disp(NOW_all_disp) {
@@ -984,8 +983,8 @@ let slick_manual_flag = false;
 function rangeslider_change_eachtop(){
 	if(all_play_flag == false){
 		
-		if(slick_manual_flag){
-			//スライド手動移動のときは頭出し
+		if(slick_manual_flag || recording_flag){
+			//スライド手動移動中or録音中のときは頭出し
 			let NOW_all_disp = NOW_all_set();
 			rangeslider_change(NOW_all_disp);
 		}else{
@@ -1016,7 +1015,7 @@ function rangeslider_change_eachtop(){
 //audioタグ、スライド移動、スライダー移動無効、
 //再生ボタン切り替え
 function all_play_btn_start(){
-		$('audio, .slick-arrow ,.db_slide,.rangeslider').css("pointer-events", "none");
+		$('audio, .slick-arrow ,.db_slide, .rangeslider, #rec').css("pointer-events", "none");
 		$('.all_play').hide();
 		$('.all_play_stop').show();
 }
@@ -1024,7 +1023,7 @@ function all_play_btn_start(){
 //audioタグ、スライド移動、スライダー移動有効、
 //再生ボタン切り替え
 function all_play_btn_stop(){
-		$('audio, .slick-arrow ,.db_slide ,.rangeslider').css("pointer-events", "auto");
+		$('audio, .slick-arrow ,.db_slide ,.rangeslider ,#rec').css("pointer-events", "auto");
 		$('.all_play').show();
 		$('.all_play_stop').hide();
 }
