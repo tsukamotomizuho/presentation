@@ -331,52 +331,115 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 
 <script>
-
 	
-//①スライドUL機能-----------------------------------	
+//グローバル変数----------------------
+
+//スライド用
+	//現在のスライド番号
+	let slide_now_num ='';
+	//スライド総数
+	let slide_num ='';
+	//スライドid
+	let slide_id ='';
+	//スライドグループid
+	let slide_group ='';
+	//スライド名
+	let slide_name = '';
+	//アップロード回数
+	let slide_ul_num = 0;
+	//スライドデータ(DB登録用)
+	let	slide_data_ul;
 	
-//グローバル変数
-let slide_now_num ='';//現在のスライド番号
-let slide_num ='';//スライド総数
-let slide_id ='';//スライドid
-let slide_group ='';//スライドグループid
-let slide_name = '';
 
-//DBのスライド有無チェック
-//メモ：javascriptでphpを呼び出す際は、''でくくる
+//音声データ用
+	//音声データファイル名(DB取得用)
+	let voice_data;
+	//音声データファイル名リスト
+	let voice_data_split;
 	
-slide_id ='<?=$view_slide_id?>';
-console.log("DBのスライド有無チェック",slide_id);
-
-if(slide_id != 'なし'){
-	//スライドデバッグ用
-	slide_name ='<?=$view_slide_name?>';
-	let view_slide_data ='<?=$view_slide_data_copy?>';
-	let view_slide_num = '<?=$view_slide_num?>';
-	slide_group = '<?=$view_slide_group?>';
-
-	console.log('スライド名',slide_name);
-	console.log('スライドデータ',view_slide_data);
-	console.log('スライドid',slide_id);
-	console.log('スライドグループid',slide_group);
-	console.log('スライド総数',view_slide_num);
-
-   $('.sample_slide').remove();
-   $('#slide_name').append(slide_name);
-
-	slide_num = view_slide_num;
-
-   }else{
-		$('.db_slide').remove();
-	   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
-   }
-
-
-   
+	//音声データ時間の総和
+	let voice_time_all = 0;
+	//音声データ時間(DB取得用、文字列)
+	let voice_time ='';
+	//デフォルト音声時間(3s)
+	let default_audio_time = 3000;
+	//音声総時間(表示用)
+	let voice_time_all_html;
+	//音声時間リスト(配列：1~)
+	let voice_time_split;
+	
+	
+//初期処理---------------------------------------
 $(function () {
-	//スライド起動関数 
-	slickjs();
+	
+	//1.スライドDBデータ取得＆表示処理--------------
+	//DBのスライド有無チェック
+		slide_id ='<?=$view_slide_id?>';
+		console.log("DBのスライド有無チェック",slide_id);
 
+	if(slide_id != 'なし'){
+		//スライドデバッグ用
+		slide_name ='<?=$view_slide_name?>';
+		let view_slide_data ='<?=$view_slide_data_copy?>';
+		let view_slide_num = '<?=$view_slide_num?>';
+		slide_group = '<?=$view_slide_group?>';
+
+		console.log('スライド名',slide_name);
+		console.log('スライドデータ',view_slide_data);
+		console.log('スライドid',slide_id);
+		console.log('スライドグループid',slide_group);
+		console.log('スライド総数',view_slide_num);
+
+	   $('.sample_slide').remove();
+	   $('#slide_name').append(slide_name);
+
+		slide_num = view_slide_num;
+
+	   }else{
+		   //データ未登録時の処理★★要検討
+			$('.db_slide').remove();
+		   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
+	   }
+
+	//2.スライド起動関数---------------------- 
+		slickjs();
+
+	//3.音声DBデータ取得＆表示処理----------------------
+
+	//1)音声DBデータを取得＆表示
+	//DBの音声有無チェック処理
+	let db_voice_chk = '<?=$view_voice_id?>' ;
+	console.log("DBの音声有無チェック(voice_id)",db_voice_chk);
+
+		if(db_voice_chk != 'なし'){
+			//音声データファイル名取得
+			voice_data ='<?=$view_voice_data_copy?>';
+			voice_data_split = voice_data.split('/');
+			console.log('取得した音声データ：',voice_data_split);
+			//phpで作成したタグを挿入
+			$('#recordingslist').append('<?=$view_voice?>');
+		   }
+
+	//2)音声時間DBデータを取得＆表示
+		if(db_voice_chk != 'なし'){
+			
+			//DBから取得した音声時間を代入
+			voice_time ='<?=$view_voice_time_copy?>';
+			
+		   }else{
+		   		//データ未登録時の処理★★要検討
+			   for(let i =1;i <= slide_num;i++){
+					voice_time += default_audio_time+'/';
+				}
+			   console.log("voice_time",voice_time);
+		   }
+
+		//音声時間リスト作成
+		voice_time_split_mk(voice_time);
+		//音声総時間の表示＆スライダー更新
+		voice_time_all_disp(voice_time_split);
+		//スライダー更新
+		$('input[type="range"]').rangeslider('update', true);
 });
 
 
@@ -430,15 +493,42 @@ function slickjs(){
 	  });
 	
 }
+	
+//音声時間リスト作成関数 
+function voice_time_split_mk(voice_time){
+	//音声時間リスト作成(配列：1~)
+	voice_time_split = voice_time.split('/');	
+	//先頭にダミーを追加(スライド番号に合わせる)
+	voice_time_split.unshift(0);
+	voice_time_split.pop();//末尾を削除
+}
+	
+//音声総時間の表示＆スライダーバー(全体)更新関数
+function voice_time_all_disp(voice_time_split){
+	
+	voice_time_all = 0;
+	
+	//音声時間リストを音声総和時間に変換
+	for(var i =1; i < voice_time_split.length; i++){
+		voice_time_split[i] = Number(voice_time_split[i]);
+		voice_time_all += voice_time_split[i];
+	};
+	
+	console.log('音声時間リスト：',voice_time_split);
+	console.log('voice_time_all：',voice_time_all/1000);	
 
+	//音声総時間取得＆挿入
+	voice_time_all_html = toHms(voice_time_all/1000);
+
+	//音声総時間挿入(html&max)
+	$('#all_time').html(voice_time_all_html);
+	$('#rangeslider').attr('max',voice_time_all).change();
 	
-//グローバル関数	
-	//アップロード回数
-	let slide_ul_num = 0;
-	//スライドデータ(DB登録用)
-	let	slide_data_ul;
+}
 	
-//①ファイル初期UL押下(DB登録も含む)
+
+//①ファイル初期UL押下時-------------
+
 $('#upfile').change(function(){
 
 	//1)スライドUL取得処理
@@ -569,24 +659,6 @@ function slide_update_all(){
 	
 //④音声録音機能-----------------------------------
 
-//グローバル変数
-	
-	//音声データファイル名
-	let voice_data ='<?=$view_voice_data_copy?>';
-	let voice_data_split = voice_data.split('/');
-	console.log('取得した音声データ：');
-	console.log(voice_data_split);
-	
-	//DBの音声の有無チェック＆DB取得音声を表示
-	let db_voice_chk = '<?=$view_voice_id?>' ;
-	console.log("DBの音声有無チェック(voice_id)",db_voice_chk);
-
-	if(db_voice_chk != 'なし'){
-		//phpで作成したタグを挿入
-		$('#recordingslist').append('<?=$view_voice?>');
-		console.log("slide_num：",slide_num);
-			
-	   }
 	
 	
   function __log(e, data) {
@@ -773,65 +845,6 @@ function voice_display(slide_num,slide_now_num){
 }
 
 
-//スライド時間取得処理
-//録音時に音声時間を取得して、DBに登録して、取得する
-
-	//音声データ時間の総和
-	let voice_time_all = 0;
-	let voice_time = 0;
-	let default_audio_time = 3000;//デフォルト音声時間(3s)
-	//音声総時間(表示用)
-	let voice_time_all_html;
-	//音声時間リスト(配列：1~)
-	let voice_time_split;
-	
-	//DBの音声の有無チェック＆DB取得音声を表示
-	if(db_voice_chk != 'なし'){
-		//phpで取得した音声時間を代入
-		voice_time ='<?=$view_voice_time_copy?>';
-	   }else{
-		   for(let i =1;i <= slide_num;i++){
-		   		voice_time += default_audio_time+'/';
-			}
-	   }
-
-	//音声リスト作成
-	voice_time_split_mk(voice_time);
-	//音声総時間の表示＆スライダー更新
-	voice_time_all_disp(voice_time_split);
-	
-	
-//音声リスト作成関数 
-function voice_time_split_mk(voice_time){
-	//音声時間リスト作成(配列：1~)
-	voice_time_split = voice_time.split('/');	
-	//先頭にダミーを追加(スライド番号に合わせる)
-	voice_time_split.unshift(0);
-	voice_time_split.pop();//末尾を削除
-}
-	
-//音声総時間の表示＆スライダー更新関数
-function voice_time_all_disp(voice_time_split){
-	
-	voice_time_all = 0;
-	
-	//音声時間リストを音声総和時間に変換
-	for(var i =1; i < voice_time_split.length; i++){
-		voice_time_split[i] = Number(voice_time_split[i]);
-		voice_time_all += voice_time_split[i];
-	};
-	
-	console.log('音声時間リスト：',voice_time_split);
-	console.log('voice_time_all：',voice_time_all/1000);	
-
-	//音声総時間取得＆挿入
-	voice_time_all_html = toHms(voice_time_all/1000);
-
-	//音声総時間挿入(html&max)
-	$('#all_time').html(voice_time_all_html);
-	$('#rangeslider').attr('max',voice_time_all).change();
-	
-}
 	
 //	⑥自動再生/一時停止ボタン押下後
 	
@@ -852,7 +865,8 @@ function all_play_btn(){
 function all_play(){
 	all_play_flag = true;
 	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
-	all_play_true(onSlideEnd_time);		
+	all_play_true(onSlideEnd_time);
+
 }
 
 function all_play_true(onSlideEnd_time){
@@ -890,11 +904,11 @@ function all_play_true(onSlideEnd_time){
 		let TOTAL = default_audio_time;//デフォルト3s
 		console.log('TOTAL：',TOTAL);
 		
-	//音声再生時シークバー(全体)同期処理
+		//音声再生時シークバー(全体)同期処理
 		//現在のスライダー位置を加算
 		PassSec = onSlideEnd_time;
 		// タイマーをセット(500ms間隔)
-		PassageID = setInterval('show_NOW_all_disp(0)',500);
+		PassageID = setInterval('show_NOW_all_disp(0)',1000);
 		setTimeout(next_slide, TOTAL);
 	}
 }
@@ -914,10 +928,22 @@ var next_slide = function(){
 	}
 }
 
+	
+//2)一時停止処理
+function all_play_stop_tmp(){
+	if(TARGET){
+		TARGET.pause();
+	}
+	all_play_flag = false;
+	//audioタグ、スライド移動有効
+	all_play_btn_stop();
+	// タイマーのクリア
+	clearInterval( PassageID );   
+}
 //スライダーバー(全体)遷移関数 (音声データがなかった時用)
 function show_NOW_all_disp(NOW_all_disp) {
 
-	PassSec += 500;
+	PassSec += 1000;
 	if(PassSec < default_audio_time){
 		NOW_all_disp = NOW_all_set() + PassSec;
 		//スライダーバー(全体)移動
@@ -973,19 +999,7 @@ function rangeslider_change_eachtop(){
 		}
 	}
 }
-	
-//2)一時停止処理
-function all_play_stop_tmp(){
 
-	all_play_flag = false;
-	if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
-				TARGET.pause();
-	}
-
-	//audioタグ、スライド移動有効
-		all_play_btn_stop();
-		clearInterval( PassageID );   // タイマーのクリア
-}
 
 //⑦停止ボタン押下後 不要？⇒削除(スライダー(全体)があるため)
 //function all_play_stop(){
@@ -999,16 +1013,18 @@ function all_play_stop_tmp(){
 //}
 	
 
-//audioタグ、スライド移動無効、再生ボタン切り替え
+//audioタグ、スライド移動、スライダー移動無効、
+//再生ボタン切り替え
 function all_play_btn_start(){
-		$('audio, .slick-arrow ,.db_slide').css("pointer-events", "none");
+		$('audio, .slick-arrow ,.db_slide,.rangeslider').css("pointer-events", "none");
 		$('.all_play').hide();
 		$('.all_play_stop').show();
 }
 
-//audioタグ、スライド移動有効、再生ボタン切り替え
+//audioタグ、スライド移動、スライダー移動有効、
+//再生ボタン切り替え
 function all_play_btn_stop(){
-		$('audio, .slick-arrow ,.db_slide').css("pointer-events", "auto");
+		$('audio, .slick-arrow ,.db_slide ,.rangeslider').css("pointer-events", "auto");
 		$('.all_play').show();
 		$('.all_play_stop').hide();
 }
