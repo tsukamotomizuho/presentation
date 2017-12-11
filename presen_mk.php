@@ -214,48 +214,46 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="アイコンサンプル画像" >
 		</div>
-		
 
-	
 	<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
-		<label for="upfile" >
-			<h4><span class="label label-warning btn_effect">①スライド登録(フォルダ)</span></h4>
-			<input type="file" id="upfile"  name="upfile[]" webkitdirectory style="display:none;" />
+		<label for="upfile">
+			<h3><span class="label label-warning btn_effect "><span class="glyphicon glyphicon-level-up"></span>　①スライド登録</span></h3>
+			<input type="file" id="upfile"  class="btn btn-warning"  name="upfile[]" webkitdirectory style="display:none;" />
 		</label>
 
 	</form>
 	
-	<form id="update_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
-		<label for="update" >
-			<h4><span class="label label-warning btn_effect">②スライドを変更</span></h4>
-			<button type="button" id="update"  style="display:none;"></button>
-		</label>
-		<div id="update_type" style="display:none;">
+	
+		<button  id="slide_update" type="button" class="btn btn-primary" onclick="slide_update();" style="margin-bottom:10px"><span class="glyphicon glyphicon-wrench"></span>　②スライド変更</button>
 
+<div id="update_type" style="display:none;">
+	<form id="update_form_one" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="slide_update_one" >
-			<h5><span class="label label-warning btn_effect" style ="margin:10px 10px;">1)今のスライドだけ変更【未実装】</span></h5>
+			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-open-file"></span>　一枚</button>
 			<input type="file" id="slide_update_one" name="slide_update_one" style="display:none"/>
 		</label>
+	</form>
+	
+	<form id="update_form_all" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="slide_update_all" >
-			<h5><span class="label label-warning btn_effect" style ="margin:10px 10px;">2)スライド一括変更(フォルダごと)【未実装】</span></h5>
+			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-level-up"></span>　一括</button>			
+			
 			<input type="file" id="slide_update_all"  name="slide_update_all[]" webkitdirectory  style="display:none;"/>
 		</label>
-	
-			</div>
-				
-
 	</form>
+</div>
 
 
-	 <button  id="rec" type="button" class="btn btn-info" onclick="startRecording(this);">③音声録音</button>
-	 <button  id="rec_stop" type="button" class="btn btn-info" onclick="stopRecording(this);" style="display:none;">④録音停止</button>
+	 <button  id="rec" type="button" class="btn btn-danger" onclick="startRecording(this);" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　③音声録音</button>
+	 
+	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:20px"><span class="glyphicon glyphicon-pause"></span>　④録音停止</button>
 
   <h5>- Recordings status -</h5>
   <div id="log" style = "margin-bottom:10px;"></div>   	
   <div id="recordingslist"></div>
   
-  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();">⑥自動再生</button>
-  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;">⑦一時停止</button>
+  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　⑥自動再生</button>
+  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　⑦一時停止</button>
    	  	   	
 	</div>
 	<div class="col-xs-1 col-sm-1" >

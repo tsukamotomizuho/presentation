@@ -77,9 +77,8 @@ h3{
 	margin-bottom: 30px;
 }
 
-.btn_effect{
+.btn_effect:hover{
 	cursor:pointer;
-	
 }
 
 .btn_effect_slde{
