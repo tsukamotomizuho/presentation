@@ -61,12 +61,12 @@ $file_dir_path = "upload/";  //画像ファイル保管先
 		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
 
 			$view_slide_data 	  = $r["slide_data"];
-			$view_slide_data_copy .= $view_slide_data.'★';
+			$view_slide_data_copy .= $view_slide_data.'/';
 			$view_slide_name      = $r["slide_name"];
 			$view_slide_id        = $r["slide_id"];
 			$view_slide_now_num   = $r["slide_now_num"];	
 			$view_slide .= '<div class="db_slide">';
-			$view_slide .= 	'<img src="'.$file_dir_path.$view_slide_data.'" class="img-responsive img-rounded slide" alt="dbスライド" ></div>';
+			$view_slide .= 	'<img src="'.$file_dir_path.$view_slide_data.'" class="img-responsive img-rounded slide slide_img_'.$view_slide_now_num.' " alt="dbスライド"></div>';
 		}		
 	}
   }
@@ -229,15 +229,18 @@ for($i=1; $i <= $view_slide_num; $i++){
 <div id="update_type" style="display:none;">
 	<form id="update_form_one" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="slide_update_one" >
-			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-open-file"></span>　一枚</button>
+			<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-open-file"></span>　一枚</span></h3>
+<!--			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-open-file"></span>　一枚</button>-->
 			<input type="file" id="slide_update_one" name="slide_update_one" style="display:none"/>
 		</label>
+<!--
 	</form>
 	
 	<form id="update_form_all" method="post" action="slide_insert.php" enctype="multipart/form-data">
+-->
 		<label for="slide_update_all" >
-			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-level-up"></span>　一括</button>			
-			
+<!--			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-level-up"></span>　一括</button>			-->
+			<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-level-up"></span>　一括</span></h3>
 			<input type="file" id="slide_update_all"  name="slide_update_all[]" webkitdirectory  style="display:none;"/>
 		</label>
 	</form>
@@ -558,13 +561,14 @@ function slide_ul_get(this_files){
 		let reader = new FileReader();
 		reader.readAsDataURL(file);
 		reader.onload = function() {
+			let slide_disp_num = i+1;
 
 			//何枚でもアップロードできるように変更
 			//スライド追加
 			slide_data += reader.result+"/";	
 			let slide_add = '';		
-			slide_add += '<div id="slide'+ i+'">';
-			slide_add += '<img src="'+reader.result+'" class="img-responsive img-rounded slide" alt="ULスライド'+i+'枚目" >';
+			slide_add += '<div id="slide'+ slide_disp_num+'">';
+			slide_add += '<img src="'+reader.result+'" class="img-responsive img-rounded slide slide_img_'+slide_disp_num+'" alt="ULスライド'+slide_disp_num+'枚目" >';
 			slide_add += '</div>'; 
 			slider_add += slide_add;
 
@@ -609,7 +613,7 @@ function slide_ul_db(){
 
 
 
-//②スライド変更
+//②スライド変更-------------------------------------
 function slide_update(){
 //	$('#rec ,#rec_stop').prop("disabled", false);
 //	$('.btn_effect').css("pointer-events", "auto");
@@ -619,10 +623,70 @@ function slide_update(){
 
 //②スライド一括更新を選択
 
-function slide_update_all(){
+$('#slide_update_one').change(function(){
+
+	//1)スライドUL取得処理
+	slide_ud_one_get(this.files);
+
+	//2)DB登録処理(ajax)
+	slide_ud_one_db();
 	
+});
+
+
+//1)スライドUL-取得処理
+function slide_ud_one_get(this_files){
+
+//	//前スライド(一枚)削除
+//	$('.slide'+slide_now_num).remove();
+	
+	console.log('slide_now_num',slide_now_num);
+	
+	//スライドデータ(DB登録用)
+	console.log('this_files[0]',this_files[0]);
+	slide_data_ul = this_files[0];
+	
+	//スライドデータ(html表示用)
+	let slide_data_img ='';
+	
+	//	ULされたスライドのhtmlを作成
+	let file = this_files[0];
+
+	//アップロードされたファイル名からスライド名を取得
+	slide_name = file['name'];
+	console.log('slide_name',slide_name);
+
+	// readerのresultプロパティに、データURLとしてエンコードされたファイルデータを格納
+	let reader = new FileReader();
+	reader.readAsDataURL(file);
+	reader.onload = function() {
+	//新しいスライドimgの挿入
+	$('.slide_img_'+slide_now_num).attr("src",reader.result);
+	}
 }
 	
+//2)スライドUL-DB登録処理(ajax)
+function slide_ud_one_db(){
+	
+	let fd = new FormData($('#slide_update').get(0));
+	//$postで確認
+	fd.append('slide_name', slide_name);
+	fd.append('slide_group', slide_group);
+	fd.append('slide_now_num', slide_now_num);
+
+	$.ajax({
+		type: 'POST',
+		url: 'slide_update_one.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+       console.log(data);
+	slide_group = data.split('/')[1];
+	console.log('スライド変更処理終了');
+	console.log('slide_group:',slide_group);		
+	});
+}	
 
 	
 //④音声録音機能-----------------------------------
