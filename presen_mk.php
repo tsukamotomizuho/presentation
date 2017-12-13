@@ -230,16 +230,12 @@ for($i=1; $i <= $view_slide_num; $i++){
 	<form id="update_form_one" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="slide_update_one" >
 			<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-open-file"></span>　一枚</span></h3>
-<!--			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-open-file"></span>　一枚</button>-->
 			<input type="file" id="slide_update_one" name="slide_update_one" style="display:none"/>
 		</label>
-<!--
 	</form>
 	
 	<form id="update_form_all" method="post" action="slide_insert.php" enctype="multipart/form-data">
--->
 		<label for="slide_update_all" >
-<!--			<button type="button" class="btn btn-primary btn-sm" style ="margin:5px 10px;"><span class="glyphicon glyphicon-level-up"></span>　一括</button>			-->
 			<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-level-up"></span>　一括</span></h3>
 			<input type="file" id="slide_update_all"  name="slide_update_all[]" webkitdirectory  style="display:none;"/>
 		</label>
@@ -621,7 +617,7 @@ function slide_update(){
 	$('#update_type').toggle();
 }
 
-//②スライド一括更新を選択
+//②スライド一枚更新を選択
 
 $('#slide_update_one').change(function(){
 
@@ -668,7 +664,7 @@ function slide_ud_one_get(this_files){
 //2)スライドUL-DB登録処理(ajax)
 function slide_ud_one_db(){
 	
-	let fd = new FormData($('#slide_update').get(0));
+	let fd = new FormData($('#update_form_one').get(0));
 	//$postで確認
 	fd.append('slide_name', slide_name);
 	fd.append('slide_group', slide_group);
@@ -682,9 +678,9 @@ function slide_ud_one_db(){
 		contentType: false
 	}).done(function(data) {
        console.log(data);
-	slide_group = data.split('/')[1];
+//	slide_group = data.split('/')[1];
 	console.log('スライド変更処理終了');
-	console.log('slide_group:',slide_group);		
+//	console.log('slide_group:',slide_group);		
 	});
 }	
 
