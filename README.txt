@@ -1,6 +1,8 @@
 # presentation
 最新リビジョン：r35
 
+★issuesに4週目ご相談事項を記載しております★
+
 ・環境(サーバ)：xammp
 ・DB情報：presentation_db_r4.sql
 
