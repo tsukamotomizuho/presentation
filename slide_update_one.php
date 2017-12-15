@@ -45,7 +45,7 @@ $pdo = db_con();//functions.phpから呼び出し
 
 if($status==false){
 	queryError($stmt);
-	exit('Error:過去スライド取得(1)失敗');
+	exit('Error:過去スライド取得(単体)失敗');
 }else{
 	while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$slide_data_old = $r["slide_data"];
@@ -56,12 +56,10 @@ if($status==false){
 		}
 }
 
-//fileアップロード(前回のファイル削除＆今回のファイル登録)
-//Fileアップロードチェック
+//Fileアップロードチェック(前回のファイル削除＆今回のファイル登録)
 if (isset($_FILES["slide_update_one"])) {
     //情報取得
     $file_name = $_FILES["slide_update_one"]["name"]; 
-
 	
 	//"1.jpg"ファイル名取得
     $tmp_path  = $_FILES["slide_update_one"]["tmp_name"]; 
@@ -78,15 +76,14 @@ if (isset($_FILES["slide_update_one"])) {
 			// FileUpload [--Start--]
 			if ( is_uploaded_file( $tmp_path ) ) {
 				if ( move_uploaded_file( $tmp_path, $file_dir_path . $file_name ) ) {
-
-				//一時フォルダからupload/1.jpgへ移動、ファイル名は変更可能
+				//一時フォルダからupload/へ移動、ファイル名変更
 				chmod( $file_dir_path . $file_name, 0644 );//ファイルに権限付与 0644
 				echo "新スライド:".$file_name . "をアップロードしました。/";
-				if(unlink($file_dir_path . $slide_data_old )){
-					echo "旧スライド:".$slide_data_old . "を削除しました。/";
-				}else{
-					echo "旧スライド:".$slide_data_old . "を削除できませんでした。/";
-				}
+					if(unlink($file_dir_path . $slide_data_old )){
+						echo "旧スライド:".$slide_data_old . "を削除しました。/";
+					}else{
+						echo "旧スライド:".$slide_data_old . "を削除できませんでした。/";
+					}
 
 			} else {
 					echo $file_name . "をアップロードできませんでした。";//Error文字

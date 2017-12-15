@@ -573,8 +573,8 @@ function slide_ul_get(this_files){
 				//新しいsliderタグの挿入
 				slider_add += '</div>';//slider終了タグ
 				$(".slide_area").prepend(slider_add);
-				//前回の音声削除
-				$("#recordingslist>div").remove();
+//				//前回の音声削除
+//				$("#recordingslist>div").remove();
 
 				//新しいスライド起動 
 				slickjs();
@@ -617,7 +617,7 @@ function slide_update(){
 	$('#update_type').toggle();
 }
 
-//②スライド一枚更新を選択
+//1-1)スライド一枚更新を選択
 
 $('#slide_update_one').change(function(){
 
@@ -630,7 +630,7 @@ $('#slide_update_one').change(function(){
 });
 
 
-//1)スライドUL-取得処理
+//1-2)スライドUL-取得処理
 function slide_ud_one_get(this_files){
 
 //	//前スライド(一枚)削除
@@ -661,7 +661,7 @@ function slide_ud_one_get(this_files){
 	}
 }
 	
-//2)スライドUL-DB登録処理(ajax)
+//1-3)スライドUL-DB登録処理(ajax)
 function slide_ud_one_db(){
 	
 	let fd = new FormData($('#update_form_one').get(0));
@@ -684,7 +684,59 @@ function slide_ud_one_db(){
 	});
 }	
 
+
+//2-1)スライド一括更新を選択
+
+$('#slide_update_all').change(function(){
+
+	//1)スライドUL取得処理
+	slide_ul_get(this.files);
+
+	//2)DB登録処理(ajax)
+	slide_ud_all_db();
 	
+	//音声削除の質問★音声削除処理【未実装】★
+	voice_rmCheck();
+
+});
+
+//音声削除チェック
+function voice_rmCheck() {
+    if( confirm("音声を全て削除しますか？") ) {
+		//前回の音声削除
+		$("#recordingslist>div").remove();
+        alert("音声を全て削除しました。(★未実装★)");
+	}
+    else {
+        alert("音声を残しました。");
+    }
+}
+	
+//2-2)スライドUD-取得処理
+	//初回UL時と同様
+	//slide_ul_get(this.files);
+	
+//2-3)スライドUL-DB登録処理(ajax)
+function slide_ud_all_db(){
+	
+	let fd = new FormData($('#update_form_all').get(0));
+	//$postで確認
+	fd.append('slide_name', slide_name);
+	fd.append('slide_group', slide_group);
+
+	$.ajax({
+		type: 'POST',
+		url: 'slide_update_all.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+       console.log(data);
+	console.log('スライド登録処理終了');
+	});
+}
+	
+
 //④音声録音機能-----------------------------------
 	
   function __log(e, data) {
@@ -912,7 +964,6 @@ function all_play(){
 	all_play_flag = true;
 	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
 	
-	//スライダー(全体)=最終秒のとき、最初から再生する
 	if(onSlideEnd_output().onSlideEnd_slide_num+1 == slide_num && onSlideEnd_time == voice_time_split[slide_num]){
 		onSlideEnd_time = 0;
 		$('.slider'+slide_ul_num).slick('slickGoTo', 0);
