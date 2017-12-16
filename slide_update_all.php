@@ -37,7 +37,7 @@ if (isset($_FILES["slide_update_all"])) {
     $tmp_path  = $_FILES["slide_update_all"]["tmp_name"]; 
 	
 	//アップロード先のTempフォルダ
-    $file_dir_path = "upload/";  //画像ファイル保管先
+    $file_dir_path = "upload_slide/";  //画像ファイル保管先
 
 	//File名の変更(ユニークファイル名)＆アップロード
 	for ($i=0; $i < count($file_name); $i++) {
@@ -50,7 +50,7 @@ if (isset($_FILES["slide_update_all"])) {
 			// FileUpload [--Start--]
 			if ( is_uploaded_file( $tmp_path[$i] ) ) {
 				if ( move_uploaded_file( $tmp_path[$i], $file_dir_path . $file_name[$i] ) ) {
-					//一時フォルダからupload/1.jpgへ移動、ファイル名は変更可能
+					//一時フォルダからupload_slide/1.jpgへ移動、ファイル名は変更可能
 					chmod( $file_dir_path . $file_name[$i], 0644 );//ファイルに権限付与 0644
 					echo "　新スライド:".$file_name[$i] . "をアップロードしました。/";
 

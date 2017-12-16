@@ -58,7 +58,7 @@ if (isset($_FILES["upfile"])) {
     $tmp_path  = $_FILES["upfile"]["tmp_name"]; 
 	
 	//"/usr/www/tmp/1.jpg"アップロード先のTempフォルダ
-    $file_dir_path = "upload/";  //画像ファイル保管先
+    $file_dir_path = "upload_slide/";  //画像ファイル保管先
 
 	for ($i=0; $i < count($file_name); $i++) {
 		
@@ -71,7 +71,7 @@ if (isset($_FILES["upfile"])) {
 			// FileUpload [--Start--]
 			if ( is_uploaded_file( $tmp_path[$i] ) ) {
 				if ( move_uploaded_file( $tmp_path[$i], $file_dir_path . $file_name[$i] ) ) {
-					//一時フォルダからupload/1.jpgへ移動、ファイル名は変更可能
+					//一時フォルダからupload_slide/1.jpgへ移動、ファイル名は変更可能
 					chmod( $file_dir_path . $file_name[$i], 0644 );//ファイルに権限付与 0644
 					echo "スライド:".$file_name[$i] . "をアップロードしました。/";
 
@@ -90,10 +90,6 @@ $slide_num =count($file_name);
 //スライド番号(file_now_num)を一致させるため、一つずらす。
 array_unshift($file_name, "dumy");
 
-//ファイル名挿入(デバック用)
-//$slide_data = $file_name[$i];
-//スライド番号
-
 for ($i=1; $i <= $slide_num ; $i++) {
 
 //３．SQLを作成(stmlの中で)
@@ -107,8 +103,6 @@ $stmt->bindValue(':user_id', $_SESSION["user_id"], PDO::PARAM_INT);
 $status = $stmt->execute();
 //実行後、エラーだったらfalseが返る
 //PDO::PARAM_STR 文字列なら追加(セキュリティ向上)
-//数値の場合はPDO::PARAM_INT
-//phpの予約語に注意★
 	}
 
 
@@ -117,22 +111,4 @@ if($status==false){
 	queryError($stmt);
 }
 
-//ajax処理のため、以下は不要
-//if($status==false){
-//	queryError($stmt);
-//  
-//}else{//処理が終われば『index.php』に戻る。
-//	
-//	if(!isset($_SESSION["chk_ssid"]) || 
-//	   $_SESSION["chk_ssid"] != session_id()
-//	  ){
-//		  header("Location: home.php");//スペース必須
-//		  exit;//おまじない
-//	}else{
-//		  header("Location: home.php");//スペース必須
-//		  exit;//おまじない
-//	}
-//	
-//
-//}
 ?>

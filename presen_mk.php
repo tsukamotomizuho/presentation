@@ -41,7 +41,7 @@ $view_slide_id   = "なし";
 $view_slide_data ='';//スライド画像ファイル名
 $view_slide_data_copy ='' ;//デバック用
 $view_slide_name ='';//スライド名
-$file_dir_path = "upload/";  //画像ファイル保管先
+$file_dir_path = "upload_slide/";  //画像ファイル保管先
 
 //②スライドを一枚ずつ取得＆表示html作成	
 	for($i=1; $i <= $view_slide_num; $i++){
@@ -909,7 +909,7 @@ function voice_ul(soundBlob,voice_time){
 	
 	$.ajax({
 		type: 'POST',
-		url: 'voice_insert.php',
+		url: 'voice_insert_update.php',
 		data: fd,
 		processData: false,
 		contentType: false
