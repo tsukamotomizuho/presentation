@@ -86,9 +86,9 @@ if($status==false){
 		array_push($slide_data_old, $r["slide_data"]);
 		array_push($slide_id_old, $r["slide_id"]);
 			if(unlink($file_dir_path . $r["slide_data"] )){
-				echo "旧スライド:".$r["slide_data"] . "を削除しました。/";
+				echo "/旧スライド:".$r["slide_data"] . "をフォルダから削除しました。/";
 			}else{
-				echo "旧スライド:".$r["slide_data"] . "を削除できませんでした。/";
+				echo "/旧スライド:".$r["slide_data"] . "をフォルダから削除できませんでした。/";
 			}
 		}
 //	echo '　旧スライド名　'.var_dump($slide_data_old);

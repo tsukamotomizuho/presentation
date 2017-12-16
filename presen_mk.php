@@ -80,7 +80,7 @@ $file_dir_path = "upload_slide/";  //画像ファイル保管先
 	$view_voice_id   = "なし";
 	$view_voice_data_copy =''; //デバック用
 	$view_voice_time_copy    ='';
-	$voice_file_dir_path = "upload_sound/";  //画像ファイル保管先
+	$voice_file_dir_path = "upload_voice/";  //画像ファイル保管先
 
 for($i=1; $i <= $view_slide_num; $i++){
 		
@@ -128,9 +128,9 @@ for($i=1; $i <= $view_slide_num; $i++){
 				$view_voice_time    = $r["voice_time"];
 				$view_voice_time_copy    .= $r["voice_time"].'/';
 
-				$view_voice .= '<div id="slide_now_num_'.$i.'" style="display: block;">';//開始タグ
+				$view_voice .= '<div id="voice_slide_now_num_'.$i.'" style="display: block;">';//開始タグ
 				$view_voice .= 'スライド'.$i.'枚目の音声';
-				$view_voice .= '<audio id="slide_now_num_'.$i.'_audio" controls="" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
+				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
 				$view_voice .= '</div>';//終了タグ
 			}
 		}  
@@ -245,7 +245,9 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 	 <button  id="rec" type="button" class="btn btn-danger" onclick="startRecording(this);" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　③音声録音</button>
 	 
-	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:20px"><span class="glyphicon glyphicon-pause"></span>　④録音停止</button>
+	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:10px"><span class="glyphicon glyphicon-pause"></span>　④録音停止</button>
+	 
+	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_Record_one();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　⑤音声削除</button>
 
   <h5>- Recordings status -</h5>
   <div id="log" style = "margin-bottom:10px;"></div>   	
@@ -404,7 +406,7 @@ $(function () {
 		$('input[type="range"]').rangeslider('update', true);
 	
 	
-		//audioタグ表示切替処理処理
+		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
 
 });
@@ -424,7 +426,7 @@ function slickjs(){
 		    console.log("slide_num：",slide_num);
 			console.log("slide_now_num：",slide_now_num);
 		  
-			//audioタグ表示切替処理処理
+			//audioタグ＆音声削除ボタン表示切替処理処理
 			  voice_display(slide_num,slide_now_num);
 		  
 		//スライド手動移動検知処理1(slick-arrowボタン押下時)
@@ -451,7 +453,7 @@ function slickjs(){
 			console.log('現在のスライド番号：',slide_now_num);
 
 
-		//audioタグ表示切替処理処理
+		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
 		  
 		//スライダーバー(全体)移動 関数(各スライドの頭出し用)
@@ -695,7 +697,7 @@ $('#slide_update_all').change(function(){
 	//2)DB登録処理(ajax)
 	slide_ud_all_db();
 	
-	//音声削除の質問★音声削除処理【未実装】★
+	//音声削除の質問
 	voice_rmCheck();
 
 });
@@ -703,9 +705,9 @@ $('#slide_update_all').change(function(){
 //音声削除チェック
 function voice_rmCheck() {
     if( confirm("音声を全て削除しますか？") ) {
-		//前回の音声削除
-		$("#recordingslist>div").remove();
-        alert("音声を全て削除しました。(★未実装★)");
+		//音声全削除処理
+		del_Record_all();
+		alert("音声を全て削除しました。");
 	}
     else {
         alert("音声を残しました。");
@@ -827,12 +829,11 @@ function stopRecording(button) {
       var au = document.createElement('audio');
       var hf = document.createElement('a');
 
-	//旧divタグ(旧音声)削除 
-	//※表示のみ。データは残る。
-	 $('#slide_now_num_'+slide_now_num).remove();
+	//旧音声(divタグ)削除 
+	 $('#voice_slide_now_num_'+slide_now_num).remove();
 
 	//divタグ編集
-	div.id = 'slide_now_num_'+slide_now_num;
+	div.id = 'voice_slide_now_num_'+slide_now_num;
 	div.style ="display: block;";
 	div.innerHTML = 'スライド'+slide_now_num+'枚目の音声';
 
@@ -840,7 +841,7 @@ function stopRecording(button) {
 	//audioタグ編集
       au.controls = true;
       au.src = url;
-	  au.id = 'slide_now_num_'+slide_now_num+'_audio';
+	  au.id = 'voice_slide_now_num_'+slide_now_num+'_audio';
 
 	//aタグ(音声DL)編集
       hf.href = url;
@@ -921,30 +922,126 @@ function voice_ul(soundBlob,voice_time){
 
 }
 
-//audioタグ表示切替処理処理
+//audioタグ＆音声削除ボタン表示切替処理処理
 //(slide_now_numはセレクタに使用しないほうが良い。なぜかは不明。挙動がおかしくなる)
 function voice_display(slide_num,slide_now_num){
 
+	//audioタグ表示切替処理処理
 	 for (let x = 1; x <= slide_num; x++){
-		let decision = $('#slide_now_num_'+x).css('display');
+		let decision = $('#voice_slide_now_num_'+x).css('display');
+		 
 		if(slide_now_num === x){
-
-				if(decision === 'none'){
-					//要素が非表示だったら～
-					$('#slide_now_num_'+x).show();
-				}
+			if(decision === 'none'){
+				//要素が非表示だったら～
+				$('#voice_slide_now_num_'+x).show();
+			}
 		}else{
-				if(decision === 'block'){
-					//要素が表示だったら～
-					$('#slide_now_num_'+x).hide();
-				}
+			if(decision === 'block'){
+				//要素が表示だったら～
+				$('#voice_slide_now_num_'+x).hide();
+			}
 		}
 	}
-}
+	
+	//録音削除ボタンの表示判定
+	let decision2 = document.getElementById('voice_slide_now_num_'+slide_now_num);
+	console.log('decision2',decision2);
+	
+	if(decision2){
+		//要素が存在したら～
+		$('#rec_del').show();
+	}else{
+		//要素が存在しなかったら
+		$('#rec_del').hide();
 
+	}
+}
+	
 
 	
-//⑥自動再生/一時停止ボタン押下後
+
+//⑤音声削除機能-----------------------------------
+
+//1)1スライドの音声のみ削除
+function del_Record_one(){
+
+	//旧divタグ(旧音声)削除 
+	 $('#voice_slide_now_num_'+slide_now_num).remove();
+
+	//DB＆ファイル削除処理
+	voice_del_one();
+}
+	
+function voice_del_one(){
+	//送信データ作成
+	var fd = new FormData();
+		//$postで確認
+		fd.append('slide_group', slide_group);
+		fd.append('slide_now_num', slide_now_num);
+	
+	$.ajax({
+		type: 'POST',
+		url: 'voice_del_one.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+		console.log(data);
+
+		//スライダー(全体)更新処理
+		//音声時間リストにデフォルト時間を代入
+		voice_time_split[slide_now_num] = default_audio_time;
+		//音声総時間の表示＆スライダー更新
+		voice_time_all_disp(voice_time_split);
+		$('input[type="range"]').rangeslider('update', true);
+
+		console.log('音声削除処理終了');
+	});
+}
+	
+	
+//2)全スライドの音声削除-----------
+function del_Record_all(){
+
+	//旧divタグ(旧音声)全削除 
+	$("#recordingslist>div").remove();
+	
+	//DB＆ファイル削除処理
+	voice_del_all();
+
+}
+	
+	
+function voice_del_all(){
+	//送信データ作成
+	var fd = new FormData();
+		//$postで確認
+		fd.append('slide_group', slide_group);
+	
+	return $.ajax({
+		type: 'POST',
+		url: 'voice_del_all.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+       	console.log(data);
+		
+		//スライダー(全体)更新処理
+		//音声時間リストにデフォルト時間を代入
+		for(let i =1;i <= slide_num;i++){
+			voice_time_split[i] = default_audio_time;
+		}
+		//音声総時間の表示＆スライダー更新
+		voice_time_all_disp(voice_time_split);
+		$('input[type="range"]').rangeslider('update', true);
+		
+		console.log('音声削除処理終了');
+	});
+}
+	
+	
+//⑥自動再生/一時停止ボタン押下後-----------------------
 	
 //1)自動再生処理
 let all_play_flag = false;
@@ -971,12 +1068,9 @@ function all_play(){
 	
 	all_play_true(onSlideEnd_time);
 }
-
-
-
 	
 function all_play_true(onSlideEnd_time){
-	TARGET =  document.getElementById('slide_now_num_'+slide_now_num+'_audio');
+	TARGET =  document.getElementById('voice_slide_now_num_'+slide_now_num+'_audio');
 
 	console.log('音声存在チェック',TARGET != null,TARGET);
 
@@ -1112,7 +1206,7 @@ function rangeslider_change_eachtop(){
 //⑦停止ボタン押下後 不要？⇒削除(スライダー(全体)があるため)
 //function all_play_stop(){
 //	all_play_flag = false;
-//	if(document.getElementById('slide_now_num_'+slide_now_num+'_audio') != null){
+//	if(document.getElementById('voice_slide_now_num_'+slide_now_num+'_audio') != null){
 //		TARGET.currentTime = 0;
 //		TARGET.pause();
 //	}

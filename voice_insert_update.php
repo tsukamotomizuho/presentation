@@ -79,7 +79,7 @@ if (isset($_FILES["sound_blob"]) && $_FILES["sound_blob"]["error"] == '0') {
 	$tmp_path  = $_FILES["sound_blob"]["tmp_name"]; 
 	
 	//画像ファイル保管先
-    $file_dir_path = "upload_sound/";  
+    $file_dir_path = "upload_voice/";  
 
     //***File名の変更***(ユニークファイル名)
     $extension = pathinfo($file_name, PATHINFO_EXTENSION); //拡張子取得(.wav)
