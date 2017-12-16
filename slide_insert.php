@@ -73,10 +73,10 @@ if (isset($_FILES["upfile"])) {
 				if ( move_uploaded_file( $tmp_path[$i], $file_dir_path . $file_name[$i] ) ) {
 					//一時フォルダからupload_slide/1.jpgへ移動、ファイル名は変更可能
 					chmod( $file_dir_path . $file_name[$i], 0644 );//ファイルに権限付与 0644
-					echo "スライド:".$file_name[$i] . "をアップロードしました。/";
+					echo "スライド:".$file_name[$i] . "をフォルダにアップロードしました。/";
 
 			} else {
-					echo $file_name[$i] . "をアップロードできませんでした。";//Error文字
+					echo $file_name[$i] . "をフォルダにアップロードできませんでした。";//Error文字
 			}
     	}// FileUpload [--End--]
 	}
@@ -92,23 +92,28 @@ array_unshift($file_name, "dumy");
 
 for ($i=1; $i <= $slide_num ; $i++) {
 
-//３．SQLを作成(stmlの中で)
-$stmt = $pdo->prepare("INSERT INTO slide_table(slide_id,slide_group, slide_name, slide_num, slide_now_num, slide_data, user_id,create_date )VALUES(NULL, :slide_group,:slide_name, :slide_num, :slide_now_num, :slide_data, :user_id, sysdate())");
-$stmt->bindValue(':slide_group', $slide_group, PDO::PARAM_INT); 
-$stmt->bindValue(':slide_name', $slide_name, PDO::PARAM_STR); 
-$stmt->bindValue(':slide_num', $slide_num, PDO::PARAM_INT);
-$stmt->bindValue(':slide_now_num', $i, PDO::PARAM_INT);
-$stmt->bindValue(':slide_data', $file_name[$i], PDO::PARAM_STR);
-$stmt->bindValue(':user_id', $_SESSION["user_id"], PDO::PARAM_INT);
-$status = $stmt->execute();
-//実行後、エラーだったらfalseが返る
-//PDO::PARAM_STR 文字列なら追加(セキュリティ向上)
+	//３．SQLを作成(stmlの中で)
+	$stmt = $pdo->prepare("INSERT INTO slide_table(slide_id,slide_group, slide_name, slide_num, slide_now_num, slide_data, user_id,create_date )VALUES(NULL, :slide_group,:slide_name, :slide_num, :slide_now_num, :slide_data, :user_id, sysdate())");
+	$stmt->bindValue(':slide_group', $slide_group, PDO::PARAM_INT); 
+	$stmt->bindValue(':slide_name', $slide_name, PDO::PARAM_STR); 
+	$stmt->bindValue(':slide_num', $slide_num, PDO::PARAM_INT);
+	$stmt->bindValue(':slide_now_num', $i, PDO::PARAM_INT);
+	$stmt->bindValue(':slide_data', $file_name[$i], PDO::PARAM_STR);
+	$stmt->bindValue(':user_id', $_SESSION["user_id"], PDO::PARAM_INT);
+	$status = $stmt->execute();
+	//実行後、エラーだったらfalseが返る
+	//PDO::PARAM_STR 文字列なら追加(セキュリティ向上)
+
+	//４．エラー表示
+	if($status==false){
+		queryError($stmt);
+		echo "スライド:".$file_name[$i] . "をDBに登録できませんでした。/";
+	}else{
+		echo "スライド:".$file_name[$i] . "をDBに登録しました。/";
 	}
 
-
-//４．エラー表示
-if($status==false){
-	queryError($stmt);
 }
+
+
 
 ?>

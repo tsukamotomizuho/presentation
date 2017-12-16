@@ -215,6 +215,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="アイコンサンプル画像" >
 		</div>
 
+<!--
 	<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
 		<label for="upfile">
 			<h3><span class="label label-warning btn_effect "><span class="glyphicon glyphicon-level-up"></span>　①スライド登録</span></h3>
@@ -222,6 +223,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 		</label>
 
 	</form>
+-->
 	
 	
 		<button  id="slide_update" type="button" class="btn btn-primary" onclick="slide_update();" style="margin-bottom:10px"><span class="glyphicon glyphicon-wrench"></span>　②スライド変更</button>
@@ -267,12 +269,17 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<div class="slick-counter">現在のスライド：<span class="current"></span> 枚目/ <span class="total"></span>枚中</div>
 		</div>
 		<div class="slide_area">
-			<div class="sample_slide" >
+		
+	<div class="sample_slide" >
+		<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
+			<label for="upfile">
 				<div class="slider0">
-				<div class="sample"><img src="img/slide_sample.png" class="img-responsive img-rounded slide sample" alt="サンプル画像" ></div>
-				<div class="sample"><img src="img/slide_sample1.png" class="img-responsive img-rounded slide sample" alt="サンプル画像1" ></div>
+					<div class="sample"><img src="img/upfile_area.jpg" class="img-responsive img-rounded slide sample" alt="スライドULエリア" ></div>
 				</div>
-			</div>
+				<input type="file" id="upfile"  class="btn btn-warning"  name="upfile[]" webkitdirectory style="display:none;" />
+			</label>
+		</form>
+	</div>
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
@@ -604,7 +611,9 @@ function slide_ul_db(){
        console.log(data);
 	slide_group = data.split('/')[1];
 	console.log('スライド登録処理終了');
-	console.log('slide_group:',slide_group);		
+	console.log('slide_group:',slide_group);
+	//初回スライドULフォーム削除
+	$('.sample_slide').remove();
 	});
 }
 
@@ -704,13 +713,13 @@ $('#slide_update_all').change(function(){
 
 //音声削除チェック
 function voice_rmCheck() {
-    if( confirm("音声を全て削除しますか？") ) {
+    if( confirm("音声も全て削除しますか？") ) {
 		//音声全削除処理
 		del_Record_all();
 		alert("音声を全て削除しました。");
 	}
     else {
-        alert("音声を残しました。");
+//        alert("音声を残しました。");
     }
 }
 	
@@ -871,8 +880,13 @@ function stopRecording(button) {
 		$('input[type="range"]').rangeslider('update', true);
 		
 		});
+		
+		//audioタグ＆音声削除ボタン表示切替処理処理
+		  voice_display(slide_num,slide_now_num);
 	
     });
+	  
+
   }
 
 	//サポートチェック、マイクチェック？
@@ -970,6 +984,9 @@ function del_Record_one(){
 
 	//DB＆ファイル削除処理
 	voice_del_one();
+	
+	//audioタグ＆音声削除ボタン表示切替処理処理
+	  voice_display(slide_num,slide_now_num);
 }
 	
 function voice_del_one(){

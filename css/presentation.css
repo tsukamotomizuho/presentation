@@ -71,6 +71,16 @@ h3{
 /*	max-height: 100%;*/
 	border: 10px solid #888;
 	margin: 10px auto;
+	cursor:pointer;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transition: all .3s;
+    transition: all .3s;
+}
+
+.slide:hover {
+	border: 10px solid #fff;
 }
 
 .select_div{
@@ -103,11 +113,13 @@ label{
 }
 
 .slide_info ,.icon_info{
-	background-color: #888;
+	background-color: #777;
 	color: #fff;
 	border-radius: 10px;
-	width: 95%;
+	width: 100%;
 	font-size: 20px;
 	margin: 10px auto;
+	border: 10px solid #888;
 	
 }
+
