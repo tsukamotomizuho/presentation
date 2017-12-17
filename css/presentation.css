@@ -46,14 +46,6 @@ h3{
 	margin-left: 10px;
 }
 
-/*
-.img_toro{
-	margin-right: auto;
-	width: 200px;
-	margin-top: 10px;
-
-}
-*/
 
 
 
@@ -66,7 +58,7 @@ h3{
 
 
 
-.slide{
+.slide,.icon{
 	max-width: 90%;
 /*	max-height: 100%;*/
 	border: 10px solid #888;
@@ -79,7 +71,13 @@ h3{
     transition: all .3s;
 }
 
+
+
 .slide:hover {
+	border: 10px solid #fff;
+}
+
+.icon:hover {
 	border: 10px solid #fff;
 }
 
@@ -91,10 +89,8 @@ h3{
 	cursor:pointer;
 }
 
-.btn_effect_slde{
-	cursor:pointer;
-	
-}
+
+
 
 label{
 	margin: 0;

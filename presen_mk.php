@@ -7,7 +7,10 @@ include("functions.php");
 
 //セッション関数(ユーザ情報)
 $_SESSION["user_name"] = 'テストユーザ' ;
+//ユーザid
 $_SESSION["user_id"] = '1' ;
+//アイコン画像名
+$_SESSION["user_icon"] = 'test_user_icon' ;
 
 //データがないときの処理記述要？★
 
@@ -208,11 +211,17 @@ for($i=1; $i <= $view_slide_num; $i++){
   <div class="row">
 	<div class="col-xs-4 col-sm-3 select_div" >
 		<div>
+		
 			<div class="icon_info">
 			  <strong><?=$_SESSION["user_name"]?>さん</strong> 
-		</div>
+			</div>
 
-		<img src="img/icon_sample.png" class="img-responsive img-rounded slide" alt="アイコンサンプル画像" >
+
+			<div class="icon_area">
+				<img id="icon" src="img/icon_sample.png" class="img-responsive img-rounded icon" alt="アイコン画像">
+			</div>
+			
+			
 		</div>
 
 <!--
@@ -225,24 +234,31 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</form>
 -->
 	
+	<form id="upicon_form" method="post" action="icon_insert.php" enctype="multipart/form-data">
+		<label for="upicon">
+			<h3><div class="label label-warning btn_effect" onclick="icon_rec_check();"><span class="glyphicon glyphicon-user" ></span>　①アイコン変更</div></h3>
+			<input type="file" id="upicon"  class="btn btn-warning"  name="upicon" style="display:none;" />
+		</label>
+
+	</form>
 	
 		<button  id="slide_update" type="button" class="btn btn-primary" onclick="slide_update();" style="margin-bottom:10px"><span class="glyphicon glyphicon-wrench"></span>　②スライド変更</button>
 
-<div id="update_type" style="display:none;">
-	<form id="update_form_one" method="post" action="slide_insert.php" enctype="multipart/form-data">
-		<label for="slide_update_one" >
-			<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-open-file"></span>　一枚</span></h3>
-			<input type="file" id="slide_update_one" name="slide_update_one" style="display:none"/>
-		</label>
-	</form>
-	
-	<form id="update_form_all" method="post" action="slide_insert.php" enctype="multipart/form-data">
-		<label for="slide_update_all" >
-			<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-level-up"></span>　一括</span></h3>
-			<input type="file" id="slide_update_all"  name="slide_update_all[]" webkitdirectory  style="display:none;"/>
-		</label>
-	</form>
-</div>
+	<div id="update_type" style="display:none;">
+		<form id="update_form_one" method="post" action="slide_insert.php" enctype="multipart/form-data">
+			<label for="slide_update_one" >
+				<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-open-file"></span>　一枚</span></h3>
+				<input type="file" id="slide_update_one" name="slide_update_one" style="display:none"/>
+			</label>
+		</form>
+
+		<form id="update_form_all" method="post" action="slide_insert.php" enctype="multipart/form-data">
+			<label for="slide_update_all" >
+				<h3><span class="label label-primary btn_effect "><span class="glyphicon glyphicon-level-up"></span>　一括</span></h3>
+				<input type="file" id="slide_update_all"  name="slide_update_all[]" webkitdirectory  style="display:none;"/>
+			</label>
+		</form>
+	</div>
 
 
 	 <button  id="rec" type="button" class="btn btn-danger" onclick="startRecording(this);" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　③音声録音</button>
@@ -251,16 +267,16 @@ for($i=1; $i <= $view_slide_num; $i++){
 	 
 	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_Record_one();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　⑤音声削除</button>
 
-  <h5>- Recordings status -</h5>
-  <div id="log" style = "margin-bottom:10px;"></div>   	
-  <div id="recordingslist"></div>
-  
-  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　⑥自動再生</button>
-  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　⑦一時停止</button>
-   	  	   	
+	  <h5>- Recordings status -</h5>
+	  <div id="log" style = "margin-bottom:10px;"></div>   	
+	  <div id="recordingslist"></div>
+
+	  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　⑥自動再生</button>
+	  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　⑦一時停止</button>
+
 	</div>
-	<div class="col-xs-1 col-sm-1" >
-	</div>	
+	
+	<div class="col-xs-1 col-sm-1" ></div>	
    
 		
 	<div class="col-xs-7 col-sm-8" >
@@ -372,10 +388,54 @@ $(function () {
 		   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
 	   }
 
-	//2.スライド起動関数---------------------- 
+	//2.スライダーバー(全体)設置関数---------------------- 
+	//rangeslider.js-2.3.0 を使用
+	$('input[type="range"]').rangeslider({
+		polyfill: false,
+		// Callback function スライダー起動時
+		onInit: function() {
+			$('output').html(0);
+		},
+
+		// Callback function　スライダー移動時
+		onSlide: function(position, value) {
+
+			//スライド全体での秒数
+			let output = $('#rangeslider').val();
+			console.log('onSlide_all_slide：',output);
+			$('output').html(output);
+
+			//スライド単体での秒数
+			let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+			console.log('onSlide_one_slide：',onSlideEnd_time);
+
+			//アイコン表示変更処理
+			icon_disp_change(onSlideEnd_time);
+			console.log('icon_list：',icon_list);
+
+		},
+
+		// Callback function() スライダー停止時
+		onSlideEnd: function(position, value) {
+
+				//スライド単体での秒数
+				let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+				let onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
+
+			if(!all_play_flag){
+				//スライド手動移動フラグ:false
+				slick_manual_flag = false;
+				$('.slider'+slide_ul_num).slick('slickGoTo', onSlideEnd_slide_num);
+				console.log('スライダーで移動',onSlideEnd_slide_num +1);
+
+				}
+			}
+	});
+	
+	//3.スライド起動関数---------------------- 
 		slickjs();
 
-	//3.音声DBデータ取得＆表示処理----------------------
+	//4.音声DBデータ取得＆表示処理----------------------
 
 	//1)音声DBデータを取得＆表示
 	//DBの音声有無チェック処理
@@ -415,6 +475,7 @@ $(function () {
 	
 		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
+
 
 });
 
@@ -1276,41 +1337,6 @@ function toHms(t) {
 }
 	
 
-	
-//スライダーバー(全体)設置関数
-//rangeslider.js-2.3.0 を使用
-$('input[type="range"]').rangeslider({
-	polyfill: false,
-    // Callback function スライダー起動時
-    onInit: function() {
-		$('output').html(0);
-	},
-	
-    // Callback function　スライダー移動時
-    onSlide: function(position, value) {
-
-		let output = $('#rangeslider').val();
-		console.log('onSlide：',output);
-		$('output').html(output);
-		
-	},
-	
-	// Callback function() スライダー停止時
-	onSlideEnd: function(position, value) {
-
-			//スライド単体での秒数(他関数で使用)
-			let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
-			let onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
-
-		if(!all_play_flag){
-			//スライド手動移動フラグ:false
-			slick_manual_flag = false;
-			$('.slider'+slide_ul_num).slick('slickGoTo', onSlideEnd_slide_num);
-			console.log('スライダーで移動',onSlideEnd_slide_num +1);
-			
-			}
-		}
-});
 
 	
 //スライドバー移動時、スライド単体の秒数算出関数
@@ -1334,7 +1360,7 @@ function onSlideEnd_output(){
 	//何枚目のスライドか算出する
 	for(let i =0; i < slide_num; i++){
 		time += voice_time_split[i];
-		console.log('比較',output,time,time + voice_time_split[i+1]);
+//		console.log('比較',output,time,time + voice_time_split[i+1]);
 		
 		//最後のスライドの場合、最終秒は最後のスライドに含める
 		if((output >= time  && output < (time + voice_time_split[i+1]))||(i == (slide_num - 1) && output == (time + voice_time_split[i+1]))){
@@ -1346,12 +1372,191 @@ function onSlideEnd_output(){
 	onSlideEnd_time = Number(onSlideEnd_time);
 	
 	let onSlideEnd_return ={"onSlideEnd_time":onSlideEnd_time,"onSlideEnd_slide_num":onSlideEnd_slide_num};
-	console.log('onSlideEnd_return',onSlideEnd_return);
+//	console.log('onSlideEnd_return',onSlideEnd_return);
 	
 	return onSlideEnd_return;
 }
+
+	
+//アイコン表示処理-----------------------------------------
+	
+//アイコンリスト
+let icon_list = [];
+//アイコン画像格納場所
+let icon_dir_path = 'upload_icon/';
+//アイコン画像のsrc
+let icon_src = '';
+//デフォルトアイコン写真
+let default_icon_src = '<?=$_SESSION["user_icon"]?>';
+//デフォルトアイコン表示処理
+$('#icon').attr("src",icon_dir_path+default_icon_src);
+	
+//DBアイコンリスト受信処理★未実装★
+	icon_list=[{"slide_now_num":1,"icon_start_time":0,"icon_data":"icon1.png"},{"slide_now_num":1,"icon_start_time":2000,"icon_data":"icon3.png"},{"slide_now_num":2,"icon_start_time":0,"icon_data":"icon2.png"},{"slide_now_num":3,"icon_start_time":0,"icon_data":"icon3.png"}];
+
+	console.log('icon_list：',icon_list);	
+
+//最初のアイコン表示処理
+	icon_src = icon_list[0].icon_data;
+	$('#icon').attr("src",icon_dir_path+icon_src);
+
+
+//1)アイコン表示切り替え処理-----------------
+function icon_disp_change(onSlideEnd_time){
+
+	//新アイコン画像のsrc
+	let icon_src_new = '';
+
+	//現在表示すべきアイコンを算出
+	for(let i = 0; i < icon_list.length ; i++){
+		//1)スライド番号チェック
+		if(icon_list[i].slide_now_num == slide_now_num){
+			//2)スライド中の経過時間チェック
+			if(onSlideEnd_time >= icon_list[i].icon_start_time){
+				//スライド中の経過時間がicon開始時間を超えていたら、画像を変更。一番遅い開始時間の画像を取得。
+				icon_src_new = icon_list[i].icon_data;
+			   }
+		   }
+	   }
+	
+	//icon変更
+	console.log('現在表示すべきアイコン：',icon_src_new);
+	$('#icon').attr("src",icon_dir_path+icon_src_new); 
+
+}
+	
+//①アイコンUL処理-----------------
+$('#upicon').change(function(){
+	console.log('処理開始');
+
+	//1)アイコンUL取得処理
+	icon_ul_get(this.files);
+
+//	//2)DB登録処理(ajax)
+//	icon_ul_db();
+	
+});
+
+//自動再生中、アイコン変更ボタン押下⇒自動再生停止処理
+function icon_rec_check(){
+	if(all_play_flag){
+	  		all_play_stop_tmp(); 
+	   }
+}
+
+//2-1)アイコンUL-取得処理
+function icon_ul_get(this_files){
 	
 
+	console.log('slide_now_num：',slide_now_num);
+
+	//アイコンデータ
+	let file = this_files[0];
+	console.log('this_files',file);
+	//ULするアイコンのsrc
+	let icon_src_ul = '';
+
+	//アップロードされたファイル名からアイコン名を取得
+	let icon_name = file['name'];
+	console.log('icon_name',icon_name);
+
+	// readerのresultプロパティに、データURLとしてエンコードされたファイルデータを格納
+	let reader = new FileReader();
+	reader.readAsDataURL(file);
+	reader.onload = function() {
+		
+		//icon変更
+		icon_src_ul = reader.result;
+		$('#icon').attr("src",icon_src_ul); 
+		
+		//アイコンリスト更新★ajaxでファイル格納後のタイミングで実行。のちに移動する★
+		icon_list_mk(icon_name);
+		
+	}
+
+
+}
+	
+//アイコンリスト更新関数
+function icon_list_mk(icon_name){
+	
+	//スライド単体での秒数(icon_start_timeになる)
+	let icon_start_time_new = onSlideEnd_output().onSlideEnd_time;
+	console.log('icon_start_time_new：',icon_start_time_new);
+
+	//新アイコン情報
+	let icon_new ={"slide_now_num":slide_now_num,"icon_start_time":icon_start_time_new,"icon_data":icon_name};
+	//該当スライド末尾までのアイコン数
+	let icon_num_slide_last;
+	//新アイコンリスト挿入位置までのアイコン数(該当スライド中にデフォルト以外のiconがある場合)
+	let icon_num_slide_in;
+
+	if(slide_now_num == 1 && icon_start_time_new == 0){
+	   		//1枚目のスライドの初めの画像はspliceでは無理
+			//直接書き換える
+			icon_list[0] = icon_new; 
+
+	}else{
+		//新アイコン情報作成
+		for(let i = 0; i < icon_list.length ; i++){
+			//1)スライド番号チェック
+			if(icon_list[i].slide_now_num == slide_now_num){
+				//該当スライド末尾までのアイコン数
+				icon_num_slide_last = i+1;
+
+				//2)新アイコン表示時間開始のチェック
+				if(icon_start_time_new < icon_list[i].icon_start_time){
+					//旧icon開始時間よりはやいicon開始時間があれば、ひとつ少ない個数を記録。(i個目)
+					//上記の条件中で一番大きいアイコン数が残る
+					icon_num_slide_in = i;
+				   }else if(icon_start_time_new == icon_list[i].icon_start_time){
+					   //[i]のリスト削除
+						icon_list.splice(i, 1); 
+						icon_num_slide_in = i;
+				   }
+			   }
+		   }
+
+		//デバッグ用
+		console.log('icon_num_slide_last：',icon_num_slide_last);
+		console.log('icon_num_slide_in：',icon_num_slide_in);
+
+		//アイコンリスト挿入
+		if(icon_num_slide_in){
+			// 先頭から第1引数個無視、そのあとに追加
+			icon_list.splice(icon_num_slide_in, 0, icon_new );
+		}else{
+			icon_list.splice(icon_num_slide_last, 0, icon_new ); 
+	   }
+	}
+		console.log('挿入icon：',icon_new);
+		console.log('新icon_list：',icon_list);
+		icon_disp_change(icon_start_time_new);
+
+}
+	
+//2-2)スライドUL-DB登録処理(ajax)
+function icon_ul_db(){
+	
+	let fd = new FormData($('#upfile_form').get(0));
+	//$postで確認
+	fd.append('slide_name', slide_name);
+
+	$.ajax({
+		type: 'POST',
+		url: 'slide_insert.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+       console.log(data);
+	slide_group = data.split('/')[1];
+	console.log('スライド登録処理終了');
+	console.log('slide_group:',slide_group);
+	//初回スライドULフォーム削除
+	$('.sample_slide').remove();
+	});
+}
 	
 	
 	
