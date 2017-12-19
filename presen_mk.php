@@ -220,8 +220,13 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<div class="icon_area">
 				<img id="icon" src="img/icon_sample.png" class="img-responsive img-rounded icon" alt="アイコン画像">
 			</div>
-			
-			
+			<div class="icon_btn_area">
+				<button id="icon_back" type="button" class="btn icon_btn"  onclick="icon_back();"><span class="glyphicon glyphicon-chevron-left" ></span></button>
+				<button id="icon_front" type="button" class="btn icon_btn" onclick="icon_front();"><span class="glyphicon glyphicon-chevron-right" ></span></button>
+			</div>
+
+
+
 		</div>
 
 <!--
@@ -410,7 +415,9 @@ $(function () {
 			console.log('onSlide_one_slide：',onSlideEnd_time);
 
 			//アイコン表示変更処理
-			icon_disp_change(onSlideEnd_time);
+			let icon_name = icon_disp(onSlideEnd_time).icon_name;
+			$('#icon').attr("src",icon_dir_path+icon_name); 
+
 			console.log('icon_list：',icon_list);
 
 		},
@@ -1401,12 +1408,14 @@ $('#icon').attr("src",icon_dir_path+default_icon_src);
 	$('#icon').attr("src",icon_dir_path+icon_src);
 
 
-//1)アイコン表示切り替え処理-----------------
-function icon_disp_change(onSlideEnd_time){
+//1)アイコン表示算出処理-----------------
+function icon_disp(onSlideEnd_time){
 
 	//新アイコン画像のsrc
 	let icon_src_new = '';
-
+	//新アイコン画像のリスト番号
+	let icon_list_num_new = '';
+	
 	//現在表示すべきアイコンを算出
 	for(let i = 0; i < icon_list.length ; i++){
 		//1)スライド番号チェック
@@ -1415,14 +1424,69 @@ function icon_disp_change(onSlideEnd_time){
 			if(onSlideEnd_time >= icon_list[i].icon_start_time){
 				//スライド中の経過時間がicon開始時間を超えていたら、画像を変更。一番遅い開始時間の画像を取得。
 				icon_src_new = icon_list[i].icon_data;
+				icon_list_num_new = i;
 			   }
 		   }
 	   }
 	
-	//icon変更
+	
+	//icon返却
 	console.log('現在表示すべきアイコン：',icon_src_new);
-	$('#icon').attr("src",icon_dir_path+icon_src_new); 
+	let icon_disp_return ={"icon_name":icon_src_new,"icon_list_num":Number(icon_list_num_new)};
+	
+	return icon_disp_return;
 
+}
+	
+function icon_back(){
+	//スライド単体での秒数
+	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+	
+	//現在のアイコンリスト番号取得
+	let icon_list_num = icon_disp(onSlideEnd_time).icon_list_num;
+
+	console.log('icon_list_num_now',icon_list_num);
+
+	//直前のスライドまでの総時間
+	let NOW_all_disp = 0;
+
+	if(icon_list_num !== 0){
+		//アイコンリスト番号を一つ戻す
+		icon_list_num--;
+		//総時間を取得
+		for(var i = 1; i < icon_list[icon_list_num].slide_now_num; i++){
+			NOW_all_disp += voice_time_split[i];
+		}
+	}
+
+	console.log('icon_list_num_next',icon_list_num);
+		
+	NOW_all_disp += icon_list[icon_list_num].icon_start_time;
+
+	console.log('次の時間',NOW_all_disp);
+//	
+//	//スライダーバー(全体)移動
+//	rangeslider_change(NOW_all_disp);
+
+
+}
+	
+function icon_front(){
+//	//スライド単体での秒数
+//	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+//	
+//	let icon_list_num = icon_disp(onSlideEnd_time).icon_list_num;
+//
+//	console.log('icon_list_num',icon_list_num);
+//	
+//	if(icon_list_num !== icon_list.length - 1){
+//		icon_list_num++;
+//	}
+//	   
+//	let NOW_all_disp = icon_list[icon_list_num].icon_start_time
+//	
+//	//スライダーバー(全体)移動
+//	rangeslider_change(NOW_all_disp);
 }
 	
 //①アイコンUL処理-----------------
@@ -1531,7 +1595,7 @@ function icon_list_mk(icon_name){
 	}
 		console.log('挿入icon：',icon_new);
 		console.log('新icon_list：',icon_list);
-		icon_disp_change(icon_start_time_new);
+		$('#icon').attr("src",icon_dir_path+icon_name);
 
 }
 	
