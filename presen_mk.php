@@ -1403,7 +1403,7 @@ $('#icon').attr("src",icon_dir_path+default_icon_src);
 
 	console.log('icon_list：',icon_list);	
 
-//最初のアイコン表示処理
+//最初のアイコン表示処理(データ未登録or登録時の処理★未実装★)
 	icon_src = icon_list[0].icon_data;
 	$('#icon').attr("src",icon_dir_path+icon_src);
 
@@ -1438,7 +1438,12 @@ function icon_disp(onSlideEnd_time){
 
 }
 	
+//連打防止フラグ
+let click_flg = true;
+	
+//2)一つ前のアイコンを表示する関数
 function icon_back(){
+	
 	//スライド単体での秒数
 	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
 	
@@ -1447,47 +1452,93 @@ function icon_back(){
 
 	console.log('icon_list_num_now',icon_list_num);
 
-	//直前のスライドまでの総時間
-	let NOW_all_disp = 0;
-
+ 	//移動後の総時間
+	let all_next_time = 0;
+	//移動後のスライド番号
+	let slide_next_num = 1;
+	
 	if(icon_list_num !== 0){
 		//アイコンリスト番号を一つ戻す
 		icon_list_num--;
+		slide_next_num = icon_list[icon_list_num].slide_now_num;
 		//総時間を取得
-		for(var i = 1; i < icon_list[icon_list_num].slide_now_num; i++){
-			NOW_all_disp += voice_time_split[i];
+		for(var i = 1; i < slide_next_num; i++){
+			all_next_time += voice_time_split[i];
 		}
+		
+	all_next_time += icon_list[icon_list_num].icon_start_time;
 	}
 
-	console.log('icon_list_num_next',icon_list_num);
+	console.log('次のiconリスト番号',icon_list_num);
+	console.log('次のスライド番号',slide_next_num);
+	console.log('次の総時間',all_next_time);
+	
+  //スライダー＆スライダーバー(全体)一括移動関数
+  rangeslider_slick_change(all_next_time,slide_next_num);
+
+}
+
+	
+//3)一つ後のアイコンを表示する関数
+function icon_front(){
+	
+	//スライド単体での現在の秒数
+	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+	
+	//現在のアイコンリスト番号取得
+	let icon_list_num = icon_disp(onSlideEnd_time).icon_list_num;
+
+	console.log('現在のアイコン番号',icon_list_num);
+
+ 	//移動後の総時間
+	let all_next_time = 0;
+
+	//移動後のスライド番号(デフォルトは最終スライド)
+	let slide_next_num = slide_num;
+	
+	if(icon_list_num !== icon_list.length-1){
+		//アイコンリスト番号を一つ進める
+		icon_list_num++;
+		//スライド番号を更新
+		slide_next_num = icon_list[icon_list_num].slide_now_num;
+		//総時間を取得
+		for(var i = 1; i < slide_next_num; i++){
+			all_next_time += voice_time_split[i];
+		}
 		
-	NOW_all_disp += icon_list[icon_list_num].icon_start_time;
+	}else{
+		//最終スライドまでの総時間を取得
+		for(var i = 1; i < slide_next_num; i++){
+			all_next_time += voice_time_split[i];
+		}
+	}
+	
+	all_next_time += icon_list[icon_list_num].icon_start_time;
 
-	console.log('次の時間',NOW_all_disp);
-//	
-//	//スライダーバー(全体)移動
-//	rangeslider_change(NOW_all_disp);
+	console.log('次のアイコンリスト番号',icon_list_num);
+	console.log('次のスライド番号',slide_next_num);
+	console.log('次の総時間',all_next_time);
 
+  //スライダー＆スライダーバー(全体)一括移動関数
+  rangeslider_slick_change(all_next_time,slide_next_num);
 
 }
 	
-function icon_front(){
-//	//スライド単体での秒数
-//	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
-//	
-//	let icon_list_num = icon_disp(onSlideEnd_time).icon_list_num;
-//
-//	console.log('icon_list_num',icon_list_num);
-//	
-//	if(icon_list_num !== icon_list.length - 1){
-//		icon_list_num++;
-//	}
-//	   
-//	let NOW_all_disp = icon_list[icon_list_num].icon_start_time
-//	
-//	//スライダーバー(全体)移動
-//	rangeslider_change(NOW_all_disp);
+//スライダー＆スライダーバー(全体)一括移動関数
+function rangeslider_slick_change(all_next_time,slide_next_num){
+	//all_next_time：移動後の総時間
+	//slide_next_num：移動後のスライド番号
+
+	//スライダーバー(全体)移動
+	rangeslider_change(all_next_time);
+
+	//スライド手動移動フラグ
+	slick_manual_flag = false;
+	
+	//スライド移動 
+	$('.slider'+slide_ul_num).slick('slickGoTo', slide_next_num-1);
 }
+
 	
 //①アイコンUL処理-----------------
 $('#upicon').change(function(){
