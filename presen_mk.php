@@ -224,7 +224,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 				<button id="icon_back" type="button" class="btn icon_btn"  onclick="icon_back();"><span class="glyphicon glyphicon-chevron-left" ></span></button>
 				<button id="icon_front" type="button" class="btn icon_btn" onclick="icon_front();"><span class="glyphicon glyphicon-chevron-right" ></span></button>
 			</div>
-
+			<div class="icon-counter">現在のアイコン：<span class="icon_current"></span> 個目/ <span class="icon_total"></span>個中</div>
 
 
 		</div>
@@ -519,8 +519,12 @@ function slickjs(){
 	  })
 		  .slick({
 			// option here...
-//		    // マウスドラッグでスライドの切り替えをするか [初期値:true]
-//		  	draggable: false,
+		  	// マウスドラッグでスライドの切り替えをするか [初期値:true]
+		  	//draggable: false,
+	  		// スライド/フェードさせるスピード（ミリ秒） [初期値:300]
+		  	//アイコンバグ修正のため、スピード0に変更
+	  		speed: 0
+		  
 	  })
 		  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
 			$('.current').text(nextSlide + 1);
@@ -781,13 +785,15 @@ $('#slide_update_all').change(function(){
 
 //音声削除チェック
 function voice_rmCheck() {
-    if( confirm("音声も全て削除しますか？") ) {
+    if( confirm("音声＆iconも全て削除しますがよろしいですか？") ) {
 		//音声全削除処理
 		del_Record_all();
-		alert("音声を全て削除しました。");
+		//アイコン全削除処理
+		del_icon_all();		
+		alert("音声＆iconも全て削除しました。");
 	}
     else {
-//        alert("音声を残しました。");
+        alert("スライド一括更新をキャンセルしました。");
     }
 }
 	
@@ -1403,10 +1409,18 @@ $('#icon').attr("src",icon_dir_path+default_icon_src);
 
 	console.log('icon_list：',icon_list);	
 
+//icon全削除関数
+function del_icon_all(){
+	//★★ここから
+}
+	
 //最初のアイコン表示処理(データ未登録or登録時の処理★未実装★)
 	icon_src = icon_list[0].icon_data;
 	$('#icon').attr("src",icon_dir_path+icon_src);
-
+	
+//アイコン枚数表示処理
+	icon_num_disp(1);
+	console.log('アイコン数',icon_list.length);
 
 //1)アイコン表示算出処理-----------------
 function icon_disp(onSlideEnd_time){
@@ -1434,6 +1448,10 @@ function icon_disp(onSlideEnd_time){
 	console.log('現在表示すべきアイコン：',icon_src_new);
 	let icon_disp_return ={"icon_name":icon_src_new,"icon_list_num":Number(icon_list_num_new)};
 	
+	//アイコン枚数表示処理
+	icon_num_disp(icon_list_num_new+1);
+
+
 	return icon_disp_return;
 
 }
@@ -1538,7 +1556,6 @@ function rangeslider_slick_change(all_next_time,slide_next_num){
 	//スライド移動 
 	$('.slider'+slide_ul_num).slick('slickGoTo', slide_next_num-1);
 }
-
 	
 //①アイコンUL処理-----------------
 $('#upicon').change(function(){
@@ -1587,8 +1604,8 @@ function icon_ul_get(this_files){
 		//アイコンリスト更新★ajaxでファイル格納後のタイミングで実行。のちに移動する★
 		icon_list_mk(icon_name);
 		
+		
 	}
-
 
 }
 	
@@ -1640,15 +1657,23 @@ function icon_list_mk(icon_name){
 		if(icon_num_slide_in){
 			// 先頭から第1引数個無視、そのあとに追加
 			icon_list.splice(icon_num_slide_in, 0, icon_new );
+			//アイコン枚数表示処理
+			icon_num_disp(icon_num_slide_in+1);
+
 		}else{
 			icon_list.splice(icon_num_slide_last, 0, icon_new ); 
+			//アイコン枚数表示処理
+			icon_num_disp(icon_num_slide_last+1);
 	   }
 	}
+		//アイコン挿入
 		console.log('挿入icon：',icon_new);
 		console.log('新icon_list：',icon_list);
 		$('#icon').attr("src",icon_dir_path+icon_name);
+	
 
 }
+
 	
 //2-2)スライドUL-DB登録処理(ajax)
 function icon_ul_db(){
@@ -1674,6 +1699,11 @@ function icon_ul_db(){
 }
 	
 	
+//アイコン枚数表示処理
+function icon_num_disp(icon_num){
+	$('.icon_current').html(icon_num);
+	$('.icon_total').html(icon_list.length);
+}
 	
 </script>
   
