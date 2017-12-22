@@ -145,7 +145,72 @@ for($i=1; $i <= $view_slide_num; $i++){
     }
   }
 }
-		
+
+////6．SQLを作成(アイコン取得)
+//		//sqlのselect実行結果(件数)確認用
+//		$sql = 'SELECT COUNT(*) FROM icon_table 
+//		WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		slide_group ='.$view_slide_group;
+//	
+//		$res = $pdo->prepare($sql);
+//		$status1 = $res->execute();
+//		
+//		//sqlのselect実行文(最新の音声を取得)
+//		$voice_table_sql = 'SELECT * FROM icon_table 
+//		WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		slide_group ='.$view_slide_group.' 
+//		ORDER BY icon_id ASK';
+//
+//		$stmt = $pdo->prepare($voice_table_sql);
+//		$status2 = $stmt->execute();
+//		//実行後、エラーだったらfalseが返る
+//	
+//	//アイコンリスト
+//	$view_icon_list;
+//	$view_icon_id   = "なし";
+//	//画像ファイル保管先
+//	$icon_file_dir_path = "upload_icon/";  
+//
+//	$slide_now_num;
+//	$icon_start_time ='';
+//	$icon_data    ='';
+//	
+// if ($status1) {
+//
+//  //DBに該当する音声があるかどうかチェック
+//  /* SELECT 文にマッチする行数をチェック*/
+//  if ($res->fetchColumn() > 0) {
+//
+//	if($status2==false){
+//			queryError($stmt);
+//	}else{//正常
+//	  while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+//
+////$array = array('apple'=>'りんご', 'peach'=>'もも', 'pear'=>'なし');
+////array_merge()
+//
+//		  
+//				$view_voice_id      = $r["voice_id"];
+//				$view_voice_data    = $r["voice_data"];
+//				$view_voice_data_copy    .= $r["voice_data"].'/';
+//		  		//$slide_now_num = $iだから不要
+//				$view_voice_time    = $r["voice_time"];
+//				$view_voice_time_copy    .= $r["voice_time"].'/';
+//
+//				$view_voice .= '<div id="voice_slide_now_num_'.$i.'" style="display: block;">';//開始タグ
+//				$view_voice .= 'スライド'.$i.'枚目の音声';
+//				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
+//				$view_voice .= '</div>';//終了タグ
+//			}
+//		}  
+//    }
+//    /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
+//  else {
+//	  $view_voice_data_copy      .= $r["voice_data"].'/';
+//	  $view_voice_time_copy .=  '3000/';
+//    }
+//  }
+
 ?>
 
 <!DOCTYPE html>
@@ -239,7 +304,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</form>
 -->
 	
-	<form id="upicon_form" method="post" action="icon_insert.php" enctype="multipart/form-data">
+	<form id="upicon_form" method="post" action="icon_insert_update.php" enctype="multipart/form-data">
 		<label for="upicon">
 			<h3><div class="label label-warning btn_effect" onclick="icon_rec_check();"><span class="glyphicon glyphicon-user" ></span>　①アイコン変更</div></h3>
 			<input type="file" id="upicon"  class="btn btn-warning"  name="upicon" style="display:none;" />
@@ -1401,19 +1466,17 @@ let icon_dir_path = 'upload_icon/';
 let icon_src = '';
 //デフォルトアイコン写真
 let default_icon_src = '<?=$_SESSION["user_icon"]?>';
+
 //デフォルトアイコン表示処理
 $('#icon').attr("src",icon_dir_path+default_icon_src);
+	
 	
 //DBアイコンリスト受信処理★未実装★
 	icon_list=[{"slide_now_num":1,"icon_start_time":0,"icon_data":"icon1.png"},{"slide_now_num":1,"icon_start_time":2000,"icon_data":"icon3.png"},{"slide_now_num":2,"icon_start_time":0,"icon_data":"icon2.png"},{"slide_now_num":3,"icon_start_time":0,"icon_data":"icon3.png"}];
 
 	console.log('icon_list：',icon_list);	
 
-//icon全削除関数
-function del_icon_all(){
-	//★★ここから
-}
-	
+
 //最初のアイコン表示処理(データ未登録or登録時の処理★未実装★)
 	icon_src = icon_list[0].icon_data;
 	$('#icon').attr("src",icon_dir_path+icon_src);
@@ -1455,9 +1518,7 @@ function icon_disp(onSlideEnd_time){
 	return icon_disp_return;
 
 }
-	
-//連打防止フラグ
-let click_flg = true;
+
 	
 //2)一つ前のアイコンを表示する関数
 function icon_back(){
@@ -1542,20 +1603,6 @@ function icon_front(){
 
 }
 	
-//スライダー＆スライダーバー(全体)一括移動関数
-function rangeslider_slick_change(all_next_time,slide_next_num){
-	//all_next_time：移動後の総時間
-	//slide_next_num：移動後のスライド番号
-
-	//スライダーバー(全体)移動
-	rangeslider_change(all_next_time);
-
-	//スライド手動移動フラグ
-	slick_manual_flag = false;
-	
-	//スライド移動 
-	$('.slider'+slide_ul_num).slick('slickGoTo', slide_next_num-1);
-}
 	
 //①アイコンUL処理-----------------
 $('#upicon').change(function(){
@@ -1564,8 +1611,8 @@ $('#upicon').change(function(){
 	//1)アイコンUL取得処理
 	icon_ul_get(this.files);
 
-//	//2)DB登録処理(ajax)
-//	icon_ul_db();
+	//2)DB登録処理(ajax)
+	icon_ul_db();
 	
 });
 
@@ -1600,9 +1647,7 @@ function icon_ul_get(this_files){
 		//icon変更
 		icon_src_ul = reader.result;
 		$('#icon').attr("src",icon_src_ul); 
-		
-		//アイコンリスト更新★ajaxでファイル格納後のタイミングで実行。のちに移動する★
-		icon_list_mk(icon_name);
+
 		
 		
 	}
@@ -1642,9 +1687,10 @@ function icon_list_mk(icon_name){
 					//上記の条件中で一番大きいアイコン数が残る
 					icon_num_slide_in = i;
 				   }else if(icon_start_time_new == icon_list[i].icon_start_time){
-					   //[i]のリスト削除
+					   //[i]のリスト削除(実質上書き保存)
 						icon_list.splice(i, 1); 
 						icon_num_slide_in = i;
+					   
 				   }
 			   }
 		   }
@@ -1675,26 +1721,33 @@ function icon_list_mk(icon_name){
 }
 
 	
-//2-2)スライドUL-DB登録処理(ajax)
+//2-2)アイコンUL-DB登録処理(ajax)
 function icon_ul_db(){
+	//スライド単体での秒数(icon_start_timeになる)
+	let icon_start_time = onSlideEnd_output().onSlideEnd_time;
 	
-	let fd = new FormData($('#upfile_form').get(0));
+	let fd = new FormData($('#upicon_form').get(0));
 	//$postで確認
-	fd.append('slide_name', slide_name);
+	fd.append('slide_group', slide_group);
+	fd.append('slide_now_num', slide_now_num);
+	fd.append('icon_start_time', icon_start_time);
+	//icon_start_timeが重複する場合はupdate処理
 
 	$.ajax({
 		type: 'POST',
-		url: 'slide_insert.php',
+		url: 'icon_insert_update.php',
 		data: fd,
 		processData: false,
 		contentType: false
 	}).done(function(data) {
        console.log(data);
-	slide_group = data.split('/')[1];
-	console.log('スライド登録処理終了');
-	console.log('slide_group:',slide_group);
-	//初回スライドULフォーム削除
-	$('.sample_slide').remove();
+	console.log('アイコン登録処理終了');
+		
+	//アイコン名取得
+	let icon_name = data.split('new_file_name')[1].split('/')[1];
+	console.log('新icon_name:',icon_name);
+	//アイコンリスト更新	
+	icon_list_mk(icon_name);
 	});
 }
 	
@@ -1703,6 +1756,22 @@ function icon_ul_db(){
 function icon_num_disp(icon_num){
 	$('.icon_current').html(icon_num);
 	$('.icon_total').html(icon_list.length);
+}
+	
+
+//スライダー＆スライダーバー(全体)一括移動関数
+function rangeslider_slick_change(all_next_time,slide_next_num){
+	//all_next_time：移動後の総時間
+	//slide_next_num：移動後のスライド番号
+
+	//スライダーバー(全体)移動
+	rangeslider_change(all_next_time);
+
+	//スライド手動移動フラグ
+	slick_manual_flag = false;
+	
+	//スライド移動 
+	$('.slider'+slide_ul_num).slick('slickGoTo', slide_next_num-1);
 }
 	
 </script>

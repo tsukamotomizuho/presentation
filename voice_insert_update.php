@@ -119,7 +119,7 @@ if($voice_id_old){
 	//前回音声がある場合(update)
 	$stmt = $pdo->prepare("UPDATE voice_table SET voice_data = :voice_data,create_date= sysdate() WHERE voice_id= :voice_id");
 	$stmt->bindValue(':voice_data', $file_name, PDO::PARAM_STR);
-	$stmt->bindValue(':voice_id', $voice_id_old, PDO::PARAM_STR);
+	$stmt->bindValue(':voice_id', $voice_id_old, PDO::PARAM_INT);
 	$status = $stmt->execute();
 	echo '/新ファイル：'.$file_name . "でDBを更新しました。";
 }else{
