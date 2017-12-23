@@ -10,7 +10,7 @@ $_SESSION["user_name"] = 'テストユーザ' ;
 //ユーザid
 $_SESSION["user_id"] = '1' ;
 //アイコン画像名
-$_SESSION["user_icon"] = 'test_user_icon' ;
+$_SESSION["user_icon"] = 'icon_sample.png' ;
 
 //データがないときの処理記述要？★
 
@@ -146,71 +146,51 @@ for($i=1; $i <= $view_slide_num; $i++){
   }
 }
 
-////6．SQLを作成(アイコン取得)
-//		//sqlのselect実行結果(件数)確認用
-//		$sql = 'SELECT COUNT(*) FROM icon_table 
-//		WHERE user_id ='.$_SESSION["user_id"].' AND 
-//		slide_group ='.$view_slide_group;
-//	
-//		$res = $pdo->prepare($sql);
-//		$status1 = $res->execute();
-//		
-//		//sqlのselect実行文(最新の音声を取得)
-//		$voice_table_sql = 'SELECT * FROM icon_table 
-//		WHERE user_id ='.$_SESSION["user_id"].' AND 
-//		slide_group ='.$view_slide_group.' 
-//		ORDER BY icon_id ASK';
-//
-//		$stmt = $pdo->prepare($voice_table_sql);
-//		$status2 = $stmt->execute();
-//		//実行後、エラーだったらfalseが返る
-//	
-//	//アイコンリスト
-//	$view_icon_list;
-//	$view_icon_id   = "なし";
-//	//画像ファイル保管先
-//	$icon_file_dir_path = "upload_icon/";  
-//
-//	$slide_now_num;
-//	$icon_start_time ='';
-//	$icon_data    ='';
-//	
-// if ($status1) {
-//
-//  //DBに該当する音声があるかどうかチェック
-//  /* SELECT 文にマッチする行数をチェック*/
-//  if ($res->fetchColumn() > 0) {
-//
-//	if($status2==false){
-//			queryError($stmt);
-//	}else{//正常
-//	  while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-//
-////$array = array('apple'=>'りんご', 'peach'=>'もも', 'pear'=>'なし');
-////array_merge()
-//
-//		  
-//				$view_voice_id      = $r["voice_id"];
-//				$view_voice_data    = $r["voice_data"];
-//				$view_voice_data_copy    .= $r["voice_data"].'/';
-//		  		//$slide_now_num = $iだから不要
-//				$view_voice_time    = $r["voice_time"];
-//				$view_voice_time_copy    .= $r["voice_time"].'/';
-//
-//				$view_voice .= '<div id="voice_slide_now_num_'.$i.'" style="display: block;">';//開始タグ
-//				$view_voice .= 'スライド'.$i.'枚目の音声';
-//				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
-//				$view_voice .= '</div>';//終了タグ
-//			}
-//		}  
-//    }
-//    /* 行がマッチしなかった場合、voice_dataに『/』を挿入 */
-//  else {
-//	  $view_voice_data_copy      .= $r["voice_data"].'/';
-//	  $view_voice_time_copy .=  '3000/';
-//    }
-//  }
+//6．SQLを作成(アイコン取得)＆アイコンリスト作成
+		//sqlのselect実行結果(件数)確認用
+		$sql = 'SELECT COUNT(*) FROM icon_table 
+		WHERE user_id ='.$_SESSION["user_id"].' AND 
+		slide_group ='.$view_slide_group;
+	
+		$res = $pdo->prepare($sql);
+		$status1 = $res->execute();
+		
+		//sqlのselect実行文(最新の音声を取得)
+		$voice_table_sql = 'SELECT * FROM icon_table 
+		WHERE user_id ='.$_SESSION["user_id"].' AND 
+		slide_group ='.$view_slide_group.' 
+		ORDER BY icon_start_time ASC';
 
+		$stmt = $pdo->prepare($voice_table_sql);
+		$status2 = $stmt->execute();
+		//実行後、エラーだったらfalseが返る
+	
+	//アイコンリスト
+	$view_icon_list        = array();
+	$view_icon_list_all    = array();
+	$view_icon_id          = "なし";
+	
+ if ($status1) {
+	 
+	$view_icon_id   = "あり";
+  //DBに該当するアイコンがあるかどうかチェック
+  /* SELECT 文にマッチする行数をチェック*/
+  if ($res->fetchColumn() > 0) {
+
+	  
+	if($status2==false){
+			queryError($stmt);
+	}else{//正常
+		  while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+			$view_icon_list =  array('slide_now_num'=>(int)$r["slide_now_num"], 'icon_start_time'=>(int)$r["icon_start_time"], 'icon_data'=>$r["icon_data"]);
+
+			array_push($view_icon_list_all, $view_icon_list);
+
+			}  
+    	}
+  	}
+  }
 ?>
 
 <!DOCTYPE html>
@@ -289,7 +269,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 				<button id="icon_back" type="button" class="btn icon_btn"  onclick="icon_back();"><span class="glyphicon glyphicon-chevron-left" ></span></button>
 				<button id="icon_front" type="button" class="btn icon_btn" onclick="icon_front();"><span class="glyphicon glyphicon-chevron-right" ></span></button>
 			</div>
-			<div class="icon-counter">現在のアイコン：<span class="icon_current"></span> 個目/ <span class="icon_total"></span>個中</div>
+			<div class="icon-counter"><span class="icon_current"></span> / <span class="icon_total"></span>　icon</div>
 
 
 		</div>
@@ -544,9 +524,11 @@ $(function () {
 		//スライダー更新
 		$('input[type="range"]').rangeslider('update', true);
 	
-	
 		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
+	
+		//アイコン初期設定
+		icon_set();
 
 
 });
@@ -751,6 +733,9 @@ function slide_ul_db(){
 	console.log('slide_group:',slide_group);
 	//初回スライドULフォーム削除
 	$('.sample_slide').remove();
+		
+	//アイコン初期設定
+	icon_set();
 	});
 }
 
@@ -1464,26 +1449,49 @@ let icon_list = [];
 let icon_dir_path = 'upload_icon/';
 //アイコン画像のsrc
 let icon_src = '';
-//デフォルトアイコン写真
-let default_icon_src = '<?=$_SESSION["user_icon"]?>';
+//デフォルトアイコン
+let default_icon_name = '<?=$_SESSION["user_icon"]?>';
 
-//デフォルトアイコン表示処理
-$('#icon').attr("src",icon_dir_path+default_icon_src);
+//アイコン初期設定
+function icon_set(){
+
+	//アイコンリスト初期化
+	icon_list = [];
 	
-	
-//DBアイコンリスト受信処理★未実装★
-	icon_list=[{"slide_now_num":1,"icon_start_time":0,"icon_data":"icon1.png"},{"slide_now_num":1,"icon_start_time":2000,"icon_data":"icon3.png"},{"slide_now_num":2,"icon_start_time":0,"icon_data":"icon2.png"},{"slide_now_num":3,"icon_start_time":0,"icon_data":"icon3.png"}];
+	//デフォルトアイコンリスト作成処理
+	for(let i = 1; i <= slide_num; i++){
+		//アイコンリストデータ
+		let icon_list_data = {"slide_now_num":i,"icon_start_time":0,"icon_data":default_icon_name};		
+		icon_list.push(icon_list_data);
+	}
+	console.log('icon_listデフォルト：',icon_list);	
 
-	console.log('icon_list：',icon_list);	
+	//DBアイコンリスト受信処理
+	//1)アイコン声DBデータを取得＆表示
+	let db_icon_chk = '<?=$view_icon_id?>' ;
+	console.log("DBのアイコン有無チェック(icon_id)",db_icon_chk);
 
+	if(db_icon_chk != 'なし'){
+		//DBアイコンデータリスト取得
+		let icon_list_db = <?php echo json_encode($view_icon_list_all, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 
-//最初のアイコン表示処理(データ未登録or登録時の処理★未実装★)
+		console.log('icon_list_db：',icon_list_db);	
+
+		//デフォルトアイコンリスト＋DBアイコンリスト結合処理
+		for(let i = 0; i < icon_list_db.length; i++){
+			icon_list_mk(icon_list_db[i].slide_now_num,icon_list_db[i].icon_data,icon_list_db[i].icon_start_time);
+		}
+   }
+
+	//最初のアイコン表示処理
 	icon_src = icon_list[0].icon_data;
 	$('#icon').attr("src",icon_dir_path+icon_src);
 	
-//アイコン枚数表示処理
+	//アイコン枚数表示処理
 	icon_num_disp(1);
 	console.log('アイコン数',icon_list.length);
+
+}
 
 //1)アイコン表示算出処理-----------------
 function icon_disp(onSlideEnd_time){
@@ -1505,18 +1513,15 @@ function icon_disp(onSlideEnd_time){
 			   }
 		   }
 	   }
-	
-	
+
 	//icon返却
 	console.log('現在表示すべきアイコン：',icon_src_new);
 	let icon_disp_return ={"icon_name":icon_src_new,"icon_list_num":Number(icon_list_num_new)};
 	
 	//アイコン枚数表示処理
 	icon_num_disp(icon_list_num_new+1);
-
-
+	
 	return icon_disp_return;
-
 }
 
 	
@@ -1548,9 +1553,9 @@ function icon_back(){
 	all_next_time += icon_list[icon_list_num].icon_start_time;
 	}
 
-	console.log('次のiconリスト番号',icon_list_num);
-	console.log('次のスライド番号',slide_next_num);
-	console.log('次の総時間',all_next_time);
+//	console.log('次のiconリスト番号',icon_list_num);
+//	console.log('次のスライド番号',slide_next_num);
+//	console.log('次の総時間',all_next_time);
 	
   //スライダー＆スライダーバー(全体)一括移動関数
   rangeslider_slick_change(all_next_time,slide_next_num);
@@ -1594,9 +1599,9 @@ function icon_front(){
 	
 	all_next_time += icon_list[icon_list_num].icon_start_time;
 
-	console.log('次のアイコンリスト番号',icon_list_num);
-	console.log('次のスライド番号',slide_next_num);
-	console.log('次の総時間',all_next_time);
+//	console.log('次のアイコンリスト番号',icon_list_num);
+//	console.log('次のスライド番号',slide_next_num);
+//	console.log('次の総時間',all_next_time);
 
   //スライダー＆スライダーバー(全体)一括移動関数
   rangeslider_slick_change(all_next_time,slide_next_num);
@@ -1607,12 +1612,15 @@ function icon_front(){
 //①アイコンUL処理-----------------
 $('#upicon').change(function(){
 	console.log('処理開始');
+	
+	//スライド単体での秒数(icon_start_timeになる)
+	let icon_start_time_new = onSlideEnd_output().onSlideEnd_time;
 
 	//1)アイコンUL取得処理
 	icon_ul_get(this.files);
 
 	//2)DB登録処理(ajax)
-	icon_ul_db();
+	icon_ul_db(icon_start_time_new);
 	
 });
 
@@ -1623,11 +1631,8 @@ function icon_rec_check(){
 	   }
 }
 
-//2-1)アイコンUL-取得処理
+//2-1)アイコン登録-取得処理
 function icon_ul_get(this_files){
-	
-
-	console.log('slide_now_num：',slide_now_num);
 
 	//アイコンデータ
 	let file = this_files[0];
@@ -1643,22 +1648,14 @@ function icon_ul_get(this_files){
 	let reader = new FileReader();
 	reader.readAsDataURL(file);
 	reader.onload = function() {
-		
 		//icon変更
 		icon_src_ul = reader.result;
 		$('#icon').attr("src",icon_src_ul); 
-
-		
-		
 	}
-
 }
 	
 //アイコンリスト更新関数
-function icon_list_mk(icon_name){
-	
-	//スライド単体での秒数(icon_start_timeになる)
-	let icon_start_time_new = onSlideEnd_output().onSlideEnd_time;
+function icon_list_mk(slide_now_num,icon_name,icon_start_time_new){
 	console.log('icon_start_time_new：',icon_start_time_new);
 
 	//新アイコン情報
@@ -1695,10 +1692,6 @@ function icon_list_mk(icon_name){
 			   }
 		   }
 
-		//デバッグ用
-		console.log('icon_num_slide_last：',icon_num_slide_last);
-		console.log('icon_num_slide_in：',icon_num_slide_in);
-
 		//アイコンリスト挿入
 		if(icon_num_slide_in){
 			// 先頭から第1引数個無視、そのあとに追加
@@ -1716,21 +1709,17 @@ function icon_list_mk(icon_name){
 		console.log('挿入icon：',icon_new);
 		console.log('新icon_list：',icon_list);
 		$('#icon').attr("src",icon_dir_path+icon_name);
-	
-
 }
 
 	
 //2-2)アイコンUL-DB登録処理(ajax)
-function icon_ul_db(){
-	//スライド単体での秒数(icon_start_timeになる)
-	let icon_start_time = onSlideEnd_output().onSlideEnd_time;
+function icon_ul_db(icon_start_time_new){
 	
 	let fd = new FormData($('#upicon_form').get(0));
 	//$postで確認
 	fd.append('slide_group', slide_group);
 	fd.append('slide_now_num', slide_now_num);
-	fd.append('icon_start_time', icon_start_time);
+	fd.append('icon_start_time', icon_start_time_new);
 	//icon_start_timeが重複する場合はupdate処理
 
 	$.ajax({
@@ -1746,8 +1735,8 @@ function icon_ul_db(){
 	//アイコン名取得
 	let icon_name = data.split('new_file_name')[1].split('/')[1];
 	console.log('新icon_name:',icon_name);
-	//アイコンリスト更新	
-	icon_list_mk(icon_name);
+	//アイコンリスト更新
+	icon_list_mk(slide_now_num,icon_name,icon_start_time_new);
 	});
 }
 	
