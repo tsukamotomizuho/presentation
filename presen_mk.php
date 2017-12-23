@@ -274,24 +274,20 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 		</div>
 
-<!--
-	<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
-		<label for="upfile">
-			<h3><span class="label label-warning btn_effect "><span class="glyphicon glyphicon-level-up"></span>　①スライド登録</span></h3>
-			<input type="file" id="upfile"  class="btn btn-warning"  name="upfile[]" webkitdirectory style="display:none;" />
-		</label>
-
-	</form>
--->
-	
 	<form id="upicon_form" method="post" action="icon_insert_update.php" enctype="multipart/form-data">
 		<label for="upicon">
-			<h3><div class="label label-warning btn_effect" onclick="icon_rec_check();"><span class="glyphicon glyphicon-user" ></span>　①アイコン変更</div></h3>
+			<h3><div class="label label-warning btn_effect" onclick="icon_rec_check();"><span class="glyphicon glyphicon-user" >up</span>　①アイコン登録</div></h3>
 			<input type="file" id="upicon"  class="btn btn-warning"  name="upicon" style="display:none;" />
 		</label>
-
 	</form>
-	
+
+	<!-- 1)アイコン全削除処理-->
+	 <button  id="icon_del_all" type="button" class="btn btn-warning" onclick="icon_del_all();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×all</span></button>
+	<!-- 2)アイコンスライド単位削除処理-->
+	 <button  id="icon_del_slide" type="button" class="btn btn-warning" onclick="icon_del_slide();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×slide</span></button>
+	<!-- 3)アイコン単体削除処理-->
+	 <button  id="icon_del_one" type="button" class="btn btn-warning" onclick="icon_del_one();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×1</span></button>
+	  
 		<button  id="slide_update" type="button" class="btn btn-primary" onclick="slide_update();" style="margin-bottom:10px"><span class="glyphicon glyphicon-wrench"></span>　②スライド変更</button>
 
 	<div id="update_type" style="display:none;">
@@ -526,7 +522,7 @@ $(function () {
 	
 		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
-	
+
 		//アイコン初期設定
 		icon_set();
 
@@ -713,7 +709,7 @@ function slide_ul_get(this_files){
 
 }
 	
-//2)スライドUL-DB登録処理(ajax)
+//2)スライド初期UL-DB登録処理(ajax)
 function slide_ul_db(){
 	
 	let fd = new FormData($('#upfile_form').get(0));
@@ -835,12 +831,12 @@ $('#slide_update_all').change(function(){
 
 //音声削除チェック
 function voice_rmCheck() {
-    if( confirm("音声＆iconも全て削除しますがよろしいですか？") ) {
+    if( confirm("音声＆アイコンも全て削除しますがよろしいですか？") ) {
 		//音声全削除処理
-		del_Record_all();
+		rec_del_all();
 		//アイコン全削除処理
-		del_icon_all();		
-		alert("音声＆iconも全て削除しました。");
+		icon_del_all();
+		alert("音声＆アイコンも全て削除しました。");
 	}
     else {
         alert("スライド一括更新をキャンセルしました。");
@@ -1142,7 +1138,7 @@ function voice_del_one(){
 	
 	
 //2)全スライドの音声削除-----------
-function del_Record_all(){
+function rec_del_all(){
 
 	//旧divタグ(旧音声)全削除 
 	$("#recordingslist>div").remove();
@@ -1451,7 +1447,11 @@ let icon_dir_path = 'upload_icon/';
 let icon_src = '';
 //デフォルトアイコン
 let default_icon_name = '<?=$_SESSION["user_icon"]?>';
-
+//アイコン全削除フラグ
+let icon_del_all_flg = false;
+//アイコンスライド単位削除_スライド番号
+let icon_del_slide_num = 0;
+	
 //アイコン初期設定
 function icon_set(){
 
@@ -1471,7 +1471,8 @@ function icon_set(){
 	let db_icon_chk = '<?=$view_icon_id?>' ;
 	console.log("DBのアイコン有無チェック(icon_id)",db_icon_chk);
 
-	if(db_icon_chk != 'なし'){
+	if(db_icon_chk != 'なし' ){
+
 		//DBアイコンデータリスト取得
 		let icon_list_db = <?php echo json_encode($view_icon_list_all, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 
@@ -1490,9 +1491,60 @@ function icon_set(){
 	//アイコン枚数表示処理
 	icon_num_disp(1);
 	console.log('アイコン数',icon_list.length);
+	
+	//アイコン全削除フラグ
+	icon_del_all_flg = false;
 
 }
 
+//アイコン再設定
+function icon_reset(){
+
+	//アイコンリスト初期化
+	icon_list = [];
+	
+	//デフォルトアイコンリスト作成処理
+	for(let i = 1; i <= slide_num; i++){
+		//アイコンリストデータ
+		let icon_list_data = {"slide_now_num":i,"icon_start_time":0,"icon_data":default_icon_name};		
+		icon_list.push(icon_list_data);
+	}
+	console.log('icon_listデフォルト：',icon_list);	
+
+	//DBアイコンリスト受信処理
+	//1)アイコン声DBデータを取得＆表示
+	let db_icon_chk = '<?=$view_icon_id?>' ;
+	console.log("DBのアイコン有無チェック(icon_id)",db_icon_chk);
+
+	//アイコン全削除フラグがtrueの場合は無視(DB情報を無視)
+	//アイコンスライドor単体削除の場合はDB情報を一部受信
+	if(!icon_del_all_flg){
+		
+		//DBアイコンデータリスト取得
+		let icon_list_db = <?php echo json_encode($view_icon_list_all, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+
+		console.log('icon_list_db：',icon_list_db);	
+
+		//デフォルトアイコンリスト＋DBアイコンリスト結合処理
+		for(let i = 0; i < icon_list_db.length; i++){
+			
+			//icon_del_slide()の削除スライドは無視ー
+			if(icon_del_slide_num !== icon_list_db[i].slide_now_num){
+			   icon_list_mk(icon_list_db[i].slide_now_num,icon_list_db[i].icon_data,icon_list_db[i].icon_start_time);
+			}
+		}
+   }
+
+	//最初のアイコン表示処理
+	icon_src = icon_list[0].icon_data;
+	$('#icon').attr("src",icon_dir_path+icon_src);
+	
+	//アイコン枚数表示処理
+	icon_num_disp(1);
+	console.log('アイコン数',icon_list.length);
+
+}
+	
 //1)アイコン表示算出処理-----------------
 function icon_disp(onSlideEnd_time){
 
@@ -1748,6 +1800,56 @@ function icon_num_disp(icon_num){
 }
 	
 
+//1)アイコン全削除処理
+function icon_del_all(){
+		//アイコン全削除フラグ
+		icon_del_all_flg = true;
+		//アイコンスライド単位削除スライド番号
+		icon_del_slide_num = 0;
+		//1)アイコン再設定(javascript)
+		icon_reset();		
+		//2)DB削除処理(ajax)
+		icon_del_db();
+}
+
+//2)アイコンスライド単位削除処理
+function icon_del_slide(){
+		//アイコン全削除フラグ
+		icon_del_all_flg = false;
+		//アイコンスライド単位削除スライド番号
+		icon_del_slide_num = slide_now_num;
+		//1)アイコン再設定(javascript)
+		icon_reset();		
+		//2)DB削除処理(ajax)
+		icon_del_db();
+}
+	
+function icon_del_db(){
+	//送信データ作成
+	var fd = new FormData();
+		//$postで確認
+		fd.append('slide_group', slide_group);
+		//全削除:0、スライド単位削除:0以上
+		fd.append('slide_now_num', icon_del_slide_num);
+
+	$.ajax({
+		type: 'POST',
+		url: 'icon_del.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+		console.log(data);
+		console.log('アイコン初期化処理終了');
+		//各フラグ初期化
+		icon_del_all_flg = false;
+		icon_del_slide_num = 0;
+	});
+}
+	
+
+
+	
 //スライダー＆スライダーバー(全体)一括移動関数
 function rangeslider_slick_change(all_next_time,slide_next_num){
 	//all_next_time：移動後の総時間

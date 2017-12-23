@@ -103,6 +103,13 @@ label{
 	
 }
 
+.slider {
+  display:none;
+}
+.slider.slick-initialized {
+  display: block;
+}
+
 #time_area{
 	display:flex;
 	
@@ -130,3 +137,4 @@ label{
 	text-align:center;
 	margin: 0 auto;
 }
+
