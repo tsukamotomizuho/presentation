@@ -824,13 +824,13 @@ $('#slide_update_all').change(function(){
 	//2)DB登録処理(ajax)
 	slide_ud_all_db();
 	
-	//音声削除の質問
-	voice_rmCheck();
+	//音声＆アイコン削除の質問
+	voice_icon_rmCheck();
 
 });
 
 //音声削除チェック
-function voice_rmCheck() {
+function voice_icon_rmCheck() {
     if( confirm("音声＆アイコンも全て削除しますがよろしいですか？") ) {
 		//音声全削除処理
 		rec_del_all();
@@ -894,10 +894,16 @@ function slide_ud_all_db(){
 	
 //音声録音フラグ
 let recording_flag = false;
-	
+
+
 //録音開始
 function startRecording(button) {
 
+
+
+//	//音声表示判定
+//	let decision2 = document.getElementById('voice_slide_now_num_'+slide_now_num);
+	
 	//音声録音フラグ
 	recording_flag = true;
 
@@ -998,12 +1004,13 @@ function stopRecording(button) {
 		//音声総時間の表示＆スライダー更新
 		voice_time_all_disp(voice_time_split);
 		$('input[type="range"]').rangeslider('update', true);
-		
+//		//アイコンスライド単位削除処理★★
+//		icon_del_slide();
 		});
 		
 		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
-	
+
     });
 	  
 
@@ -1455,16 +1462,8 @@ let icon_del_slide_num = 0;
 //アイコン初期設定
 function icon_set(){
 
-	//アイコンリスト初期化
-	icon_list = [];
-	
 	//デフォルトアイコンリスト作成処理
-	for(let i = 1; i <= slide_num; i++){
-		//アイコンリストデータ
-		let icon_list_data = {"slide_now_num":i,"icon_start_time":0,"icon_data":default_icon_name};		
-		icon_list.push(icon_list_data);
-	}
-	console.log('icon_listデフォルト：',icon_list);	
+	icon_list_default();
 
 	//DBアイコンリスト受信処理
 	//1)アイコン声DBデータを取得＆表示
@@ -1487,30 +1486,19 @@ function icon_set(){
 	//最初のアイコン表示処理
 	icon_src = icon_list[0].icon_data;
 	$('#icon').attr("src",icon_dir_path+icon_src);
-	
 	//アイコン枚数表示処理
 	icon_num_disp(1);
-	console.log('アイコン数',icon_list.length);
-	
-	//アイコン全削除フラグ
-	icon_del_all_flg = false;
 
 }
 
+
+//やり直し★★
 //アイコン再設定
 function icon_reset(){
 
-	//アイコンリスト初期化
-	icon_list = [];
-	
 	//デフォルトアイコンリスト作成処理
-	for(let i = 1; i <= slide_num; i++){
-		//アイコンリストデータ
-		let icon_list_data = {"slide_now_num":i,"icon_start_time":0,"icon_data":default_icon_name};		
-		icon_list.push(icon_list_data);
-	}
-	console.log('icon_listデフォルト：',icon_list);	
-
+	icon_list_default();
+	
 	//DBアイコンリスト受信処理
 	//1)アイコン声DBデータを取得＆表示
 	let db_icon_chk = '<?=$view_icon_id?>' ;
@@ -1538,11 +1526,24 @@ function icon_reset(){
 	//最初のアイコン表示処理
 	icon_src = icon_list[0].icon_data;
 	$('#icon').attr("src",icon_dir_path+icon_src);
-	
 	//アイコン枚数表示処理
 	icon_num_disp(1);
-	console.log('アイコン数',icon_list.length);
+}
+	
 
+//デフォルトアイコンリスト作成処理
+function icon_list_default(){
+	
+	//アイコンリスト初期化
+	icon_list = [];
+	
+	//デフォルトアイコンリスト作成処理
+	for(let i = 1; i <= slide_num; i++){
+		//アイコンリストデータ
+		let icon_list_data = {"slide_now_num":i,"icon_start_time":0,"icon_data":default_icon_name};		
+		icon_list.push(icon_list_data);
+	}
+	console.log('icon_listデフォルト：',icon_list);	
 }
 	
 //1)アイコン表示算出処理-----------------
