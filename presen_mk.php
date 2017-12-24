@@ -470,6 +470,7 @@ $(function () {
 				let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
 				let onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
 
+			//★★バグ&&!slick_manual_flag
 			if(!all_play_flag){
 				//スライド手動移動フラグ:false
 				slick_manual_flag = false;
@@ -1492,45 +1493,6 @@ function icon_set(){
 }
 
 
-//やり直し★★
-//アイコン再設定
-function icon_reset(){
-
-	//デフォルトアイコンリスト作成処理
-	icon_list_default();
-	
-	//DBアイコンリスト受信処理
-	//1)アイコン声DBデータを取得＆表示
-	let db_icon_chk = '<?=$view_icon_id?>' ;
-	console.log("DBのアイコン有無チェック(icon_id)",db_icon_chk);
-
-	//アイコン全削除フラグがtrueの場合は無視(DB情報を無視)
-	//アイコンスライドor単体削除の場合はDB情報を一部受信
-	if(!icon_del_all_flg){
-		
-		//DBアイコンデータリスト取得
-		let icon_list_db = <?php echo json_encode($view_icon_list_all, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-
-		console.log('icon_list_db：',icon_list_db);	
-
-		//デフォルトアイコンリスト＋DBアイコンリスト結合処理
-		for(let i = 0; i < icon_list_db.length; i++){
-			
-			//icon_del_slide()の削除スライドは無視ー
-			if(icon_del_slide_num !== icon_list_db[i].slide_now_num){
-			   icon_list_mk(icon_list_db[i].slide_now_num,icon_list_db[i].icon_data,icon_list_db[i].icon_start_time);
-			}
-		}
-   }
-
-	//最初のアイコン表示処理
-	icon_src = icon_list[0].icon_data;
-	$('#icon').attr("src",icon_dir_path+icon_src);
-	//アイコン枚数表示処理
-	icon_num_disp(1);
-}
-	
-
 //デフォルトアイコンリスト作成処理
 function icon_list_default(){
 	
@@ -1663,13 +1625,14 @@ function icon_front(){
 	
 	
 //①アイコンUL処理-----------------
+	
 $('#upicon').change(function(){
 	console.log('処理開始');
 	
 	//スライド単体での秒数(icon_start_timeになる)
 	let icon_start_time_new = onSlideEnd_output().onSlideEnd_time;
 
-	//1)アイコンUL取得処理
+	//1)アイコン登録情報取得処理
 	icon_ul_get(this.files);
 
 	//2)DB登録処理(ajax)
@@ -1684,7 +1647,7 @@ function icon_rec_check(){
 	   }
 }
 
-//2-1)アイコン登録-取得処理
+//1)アイコン登録情報取得処理
 function icon_ul_get(this_files){
 
 	//アイコンデータ
@@ -1706,8 +1669,40 @@ function icon_ul_get(this_files){
 		$('#icon').attr("src",icon_src_ul); 
 	}
 }
+
+
 	
-//アイコンリスト更新関数
+//2-2)アイコンUL-DB登録処理(ajax)
+function icon_ul_db(icon_start_time_new){
+	
+	let fd = new FormData($('#upicon_form').get(0));
+	//$postで確認
+	fd.append('slide_group', slide_group);
+	fd.append('slide_now_num', slide_now_num);
+	fd.append('icon_start_time', icon_start_time_new);
+	//icon_start_timeが重複する場合はupdate処理
+
+	$.ajax({
+		type: 'POST',
+		url: 'icon_insert_update.php',
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+       console.log(data);
+	console.log('アイコン登録処理終了');
+		
+	//アイコン名取得
+	let icon_name = data.split('new_file_name')[1].split('/')[1];
+	console.log('新icon_name:',icon_name);
+	//アイコンリスト更新
+	icon_list_mk(slide_now_num,icon_name,icon_start_time_new);
+		
+	});
+}
+	
+
+//アイコンリスト更新関数(リスト作成＆枚数表示＆アイコン差し替え)
 function icon_list_mk(slide_now_num,icon_name,icon_start_time_new){
 	console.log('icon_start_time_new：',icon_start_time_new);
 
@@ -1763,36 +1758,6 @@ function icon_list_mk(slide_now_num,icon_name,icon_start_time_new){
 		console.log('新icon_list：',icon_list);
 		$('#icon').attr("src",icon_dir_path+icon_name);
 }
-
-	
-//2-2)アイコンUL-DB登録処理(ajax)
-function icon_ul_db(icon_start_time_new){
-	
-	let fd = new FormData($('#upicon_form').get(0));
-	//$postで確認
-	fd.append('slide_group', slide_group);
-	fd.append('slide_now_num', slide_now_num);
-	fd.append('icon_start_time', icon_start_time_new);
-	//icon_start_timeが重複する場合はupdate処理
-
-	$.ajax({
-		type: 'POST',
-		url: 'icon_insert_update.php',
-		data: fd,
-		processData: false,
-		contentType: false
-	}).done(function(data) {
-       console.log(data);
-	console.log('アイコン登録処理終了');
-		
-	//アイコン名取得
-	let icon_name = data.split('new_file_name')[1].split('/')[1];
-	console.log('新icon_name:',icon_name);
-	//アイコンリスト更新
-	icon_list_mk(slide_now_num,icon_name,icon_start_time_new);
-	});
-}
-	
 	
 //アイコン枚数表示処理
 function icon_num_disp(icon_num){
@@ -1803,28 +1768,31 @@ function icon_num_disp(icon_num){
 
 //1)アイコン全削除処理
 function icon_del_all(){
-		//アイコン全削除フラグ
-		icon_del_all_flg = true;
-		//アイコンスライド単位削除スライド番号
-		icon_del_slide_num = 0;
-		//1)アイコン再設定(javascript)
-		icon_reset();		
-		//2)DB削除処理(ajax)
-		icon_del_db();
+	
+	//アイコンスライド単位削除スライド番号
+	icon_del_slide_num = 0;
+	//1)アイコン全初期化処理(javascript)
+	icon_reset_all();		
+	//2)DB削除処理(ajax)
+	icon_del_db();
+	
+	console.log('新しいicon_list：',icon_list);
 }
 
 //2)アイコンスライド単位削除処理
 function icon_del_slide(){
-		//アイコン全削除フラグ
-		icon_del_all_flg = false;
-		//アイコンスライド単位削除スライド番号
-		icon_del_slide_num = slide_now_num;
-		//1)アイコン再設定(javascript)
-		icon_reset();		
-		//2)DB削除処理(ajax)
-		icon_del_db();
+	
+	//アイコンスライド単位削除スライド番号
+	icon_del_slide_num = slide_now_num;
+	//1)アイコンスライド単位初期化処理(javascript)
+	icon_reset_slide();		
+	//2)DB削除処理(ajax)
+	icon_del_db();
+	
+	console.log('新しいicon_list：',icon_list);
 }
 	
+
 function icon_del_db(){
 	//送信データ作成
 	var fd = new FormData();
@@ -1842,13 +1810,52 @@ function icon_del_db(){
 	}).done(function(data) {
 		console.log(data);
 		console.log('アイコン初期化処理終了');
-		//各フラグ初期化
-		icon_del_all_flg = false;
+		//アイコンスライド初期化処理番号を初期値に戻す
 		icon_del_slide_num = 0;
 	});
 }
 	
 
+///アイコン全初期化処理
+function icon_reset_all(){
+
+	//デフォルトアイコンリスト作成処理
+	icon_list_default();
+	
+	//最初のアイコン表示処理
+	icon_src = icon_list[0].icon_data;
+	$('#icon').attr("src",icon_dir_path+icon_src);
+	//アイコン枚数表示処理
+	icon_num_disp(1);
+}
+	
+	
+//アイコンスライド単位初期化処理
+function icon_reset_slide(){
+
+	//アイコン削除リスト([0]番目からlength分削除)	
+	let icon_splice_list = [];
+
+	//該当スライドアイコン初期化処理
+	for(let i = 0; i < icon_list.length ; i++){
+		//スライド番号チェック
+		if(icon_list[i].slide_now_num == slide_now_num){
+			icon_splice_list.push(i);
+	   }
+   }
+
+	console.log('アイコンスライド単位削除実行中',icon_splice_list,'のアイコンを削除');
+	
+	//該当スライド初期アイコン挿入処理
+	//※icon_list_mkではスライドの最初のアイコンは上書き保存される
+	//アイコンリスト更新関数(リスト作成＆枚数表示＆アイコン差し替え)
+	icon_list_mk(slide_now_num,default_icon_name,0);
+	
+	//スライドの最初のアイコン以外削除
+	//icon_splice_list[1]番目から要素数分-1
+	icon_list.splice(icon_splice_list[1],icon_splice_list.length-1);
+
+}
 
 	
 //スライダー＆スライダーバー(全体)一括移動関数
