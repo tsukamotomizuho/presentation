@@ -569,13 +569,12 @@ function slickjs(){
 		  	//アイコンバグ修正のため、スピード0に変更
 	  		speed: 0
 		  
+		  
 	  })
 		  .on('beforeChange', function(event, slick, currentSlide, nextSlide) {
 			$('.current').text(nextSlide + 1);
 			slide_now_num = nextSlide + 1;
 			console.log('現在のスライド番号：',slide_now_num);
-
-
 		//audioタグ＆音声削除ボタン表示切替処理処理
 		  voice_display(slide_num,slide_now_num);
 		  
@@ -1332,9 +1331,34 @@ function rangeslider_change_eachtop(){
 	if(all_play_flag == false){
 		
 		if(slick_manual_flag || recording_flag){
-			//スライド手動移動中or録音中のときは頭出し
-			let NOW_all_disp = NOW_all_set();
-			rangeslider_change(NOW_all_disp);
+
+//頭出し処理★失敗
+//			//前回のスライド単体での秒数
+//			let before_onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+//			let before_onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
+//			let all_next_time =0;
+//			
+//			if(before_onSlideEnd_time > 0){
+//				//総時間を取得
+//				for(var i = 1; i < before_onSlideEnd_slide_num+1; i++){
+//					all_next_time += voice_time_split[i];
+//				}
+//				console.log('all_next_time',all_next_time);
+//				let slide_next_num = before_onSlideEnd_slide_num+1;
+//				console.log('slide_next_num',slide_next_num);
+//				rangeslider_slick_change(all_next_time , slide_next_num);
+//
+//				
+//			}else{
+				console.log('slide_now_num',slide_now_num);
+				//スライド手動移動中or録音中のときは頭出し
+				let NOW_all_disp = NOW_all_set();
+				rangeslider_change(NOW_all_disp);
+				//スライド手動移動フラグ
+				slick_manual_flag = false;
+//			}
+			
+			
 		}else{
 			//スライダーバーでスライドさせたときは同期
 			let NOW_all_disp = NOW_all_set();
@@ -1862,7 +1886,8 @@ function icon_reset_slide(){
 function rangeslider_slick_change(all_next_time,slide_next_num){
 	//all_next_time：移動後の総時間
 	//slide_next_num：移動後のスライド番号
-
+	
+	console.log('slide_next_num',slide_next_num);
 	//スライダーバー(全体)移動
 	rangeslider_change(all_next_time);
 
