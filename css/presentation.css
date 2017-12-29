@@ -98,7 +98,7 @@ label{
 }
 
 .slidebar_area{
-	margin-top: 20px;
+	margin-top: 10px;
 	margin-bottom: 30px;
 	
 }
@@ -106,6 +106,7 @@ label{
 .slider {
   display:none;
 }
+
 .slider.slick-initialized {
   display: block;
 }
@@ -136,5 +137,25 @@ label{
 .con_btn_area{
 	text-align:center;
 	margin: 0 auto;
+}
+
+.slidebar_btn_area,.slidebar_timer,.slick-counter{
+	display: flex;
+	justify-content: center;/* 3 */
+    align-items: center;
+	margin: 0 5px;
+		
+}
+
+.slidebar_counter{
+	display: block;
+
+}
+
+.slide_btn{
+	background-color: #888;
+	color: #fff;
+/*	border: 3px solid #888;*/
+	cursor:pointer;
 }
 

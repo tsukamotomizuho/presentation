@@ -6,7 +6,7 @@ include("functions.php");
 //ssidChk();//セッションチェック関数
 
 //セッション関数(ユーザ情報)
-$_SESSION["user_name"] = 'テストユーザ' ;
+$_SESSION["user_name"] = 'トロ' ;
 //ユーザid
 $_SESSION["user_id"] = '1' ;
 //アイコン画像名
@@ -133,7 +133,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 				$view_voice .= '<div id="voice_slide_now_num_'.$i.'" style="display: block;">';//開始タグ
 				$view_voice .= 'スライド'.$i.'枚目の音声';
-				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
+				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" controlslist="nodownload" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
 				$view_voice .= '</div>';//終了タグ
 			}
 		}  
@@ -258,7 +258,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 		<div>
 		
 			<div class="icon_info">
-			  <strong><?=$_SESSION["user_name"]?>さん</strong> 
+			  <p><?=$_SESSION["user_name"]?></p> 
 			</div>
 
 
@@ -328,7 +328,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 	<div class="col-xs-7 col-sm-8" >
 		<div class="slide_info">
 			<div id="slide_name">スライド名：</div>
-			<div class="slick-counter">現在のスライド：<span class="current"></span> 枚目/ <span class="total"></span>枚中</div>
+<!--			<div class="slick-counter"><span class="current"></span> 枚目/ <span class="total"></span>枚中</div>-->
 		</div>
 		<div class="slide_area">
 		
@@ -345,11 +345,19 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
-
 			<input id="rangeslider" type="range" min="0" max="100" value="0" data-rangeslider>
-			<output></output>
-			<div id="time_area"><div id='now_time'>0:00</div>/<div id='all_time'>0:00</div></div>
-
+			<output style="display:none;"></output>
+			<div id="time_area" style="margin-top:10px;">
+			
+		</div>
+			<div class="slidebar_btn_area">
+				<button id="slide_back" type="button" class="btn slide_btn slick-arrow"  onclick="slide_back();"><span class="glyphicon glyphicon-chevron-left" ></span></button>
+				<div class="slidebar_counter">
+					<div class="slidebar_timer"><div id='now_time'>0:00</div>/<div id='all_time'>0:00</div></div>
+					<div class="slick-counter"><span class="current"></span> of <span class="total"></span></div>
+				</div>
+				<button id="slide_front" type="button" class="btn slide_btn slick-arrow" onclick="slide_front();"><span class="glyphicon glyphicon-chevron-right" ></span></button>
+			</div>
 
 		</div>
 	</div>
@@ -408,7 +416,7 @@ $(function () {
 	//1.スライドDBデータ取得＆表示処理--------------
 	//DBのスライド有無チェック
 		slide_id ='<?=$view_slide_id?>';
-		console.log("DBのスライド有無チェック",slide_id);
+//		console.log("DBのスライド有無チェック",slide_id);
 
 	if(slide_id != 'なし'){
 		//スライドデバッグ用
@@ -417,11 +425,11 @@ $(function () {
 		let view_slide_num = '<?=$view_slide_num?>';
 		slide_group = '<?=$view_slide_group?>';
 
-		console.log('スライド名',slide_name);
-		console.log('スライドデータ',view_slide_data);
-		console.log('スライドid',slide_id);
-		console.log('スライドグループid',slide_group);
-		console.log('スライド総数',view_slide_num);
+//		console.log('スライド名',slide_name);
+//		console.log('スライドデータ',view_slide_data);
+//		console.log('スライドid',slide_id);
+//		console.log('スライドグループid',slide_group);
+//		console.log('スライド総数',view_slide_num);
 
 	   $('.sample_slide').remove();
 	   $('#slide_name').append(slide_name);
@@ -448,29 +456,30 @@ $(function () {
 
 			//スライド全体での秒数
 			let output = $('#rangeslider').val();
-			console.log('onSlide_all_slide：',output);
+//			console.log('onSlide_all_slide：',output);
 			$('output').html(output);
+			console.log('スライド全体での秒数:',output);
 
 			//スライド単体での秒数
 			let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
-			console.log('onSlide_one_slide：',onSlideEnd_time);
 
 			//アイコン表示変更処理
 			let icon_name = icon_disp(onSlideEnd_time).icon_name;
 			$('#icon').attr("src",icon_dir_path+icon_name); 
 
-			console.log('icon_list：',icon_list);
 
 		},
 
 		// Callback function() スライダー停止時
 		onSlideEnd: function(position, value) {
 
-				//スライド単体での秒数
-				let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
-				let onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
+			console.log('icon_list：',icon_list);
 
-			//★★バグ&&!slick_manual_flag
+			//スライド単体での秒数
+			let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+			let onSlideEnd_slide_num  = onSlideEnd_output().onSlideEnd_slide_num;
+
+			//★保留★スライダーが途中にあると、頭出しできない
 			if(!all_play_flag){
 				//スライド手動移動フラグ:false
 				slick_manual_flag = false;
@@ -478,7 +487,7 @@ $(function () {
 				console.log('スライダーで移動',onSlideEnd_slide_num +1);
 
 				}
-			}
+		}
 	});
 	
 	//3.スライド起動関数---------------------- 
@@ -511,7 +520,7 @@ $(function () {
 			   for(let i =1;i <= slide_num;i++){
 					voice_time += default_audio_time+'/';
 				}
-			   console.log("voice_time",voice_time);
+//			   console.log("voice_time",voice_time);
 		   }
 
 		//音声時間リスト作成
@@ -542,8 +551,8 @@ function slickjs(){
 		  	slide_num = slick.slideCount;//スライド総数
 			slide_now_num =slick.currentSlide + 1;//現在のスライド番号
 		  
-		    console.log("slide_num：",slide_num);
-			console.log("slide_now_num：",slide_now_num);
+//		    console.log("slide_num：",slide_num);
+//			console.log("slide_now_num：",slide_now_num);
 		  
 			//audioタグ＆音声削除ボタン表示切替処理処理
 			  voice_display(slide_num,slide_now_num);
@@ -567,7 +576,9 @@ function slickjs(){
 		  	//draggable: false,
 	  		// スライド/フェードさせるスピード（ミリ秒） [初期値:300]
 		  	//アイコンバグ修正のため、スピード0に変更
-	  		speed: 0
+	  		speed: 0,
+		   	// 前次ボタンを表示するか [初期値:true]
+		  	arrows: false
 		  
 		  
 	  })
@@ -638,7 +649,7 @@ function slide_ul_get(this_files){
 	$('.slider'+slide_ul_num).remove();
 	
 	slide_ul_num++;
-	console.log('スライドULチェック',slide_ul_num);//全く同じファイルを連続ULするとカウントされない。
+//	console.log('スライドULチェック',slide_ul_num);//全く同じファイルを連続ULするとカウントされない。
 	
 	//スライドデータ(DB登録用)
 	console.log('this_files',this_files);
@@ -965,7 +976,7 @@ function stopRecording(button) {
   function createDownloadLink() {
     recorder && recorder.exportWAV(function(blob) {
 	
-	console.log('音声データ：',blob);
+//	console.log('音声データ：',blob);
 		
 	 //音声データを仮想urlに変換(セッション内のみ有効)
       var url = URL.createObjectURL(blob);
@@ -990,14 +1001,12 @@ function stopRecording(button) {
 
 	//aタグ(音声DL)編集
       hf.href = url;
-		//ダウンロード属性
+	//ダウンロード属性
       hf.download = new Date().toISOString() + '.wav';
       hf.innerHTML = hf.download;
-		console.log('url：',url);
-		console.log(hf.download);
 	//html挿入
       div.appendChild(au);
-      div.appendChild(hf);
+//      div.appendChild(hf);
       recordingslist.appendChild(div);
 		
 	var audio = new Audio(); // audioの作成
@@ -1095,7 +1104,6 @@ function voice_display(slide_num,slide_now_num){
 	
 	//録音削除ボタンの表示判定
 	let decision2 = document.getElementById('voice_slide_now_num_'+slide_now_num);
-	console.log('decision2',decision2);
 	
 	if(decision2){
 		//要素が存在したら～
@@ -1240,7 +1248,7 @@ function all_play(){
 function all_play_true(onSlideEnd_time){
 	TARGET =  document.getElementById('voice_slide_now_num_'+slide_now_num+'_audio');
 
-	console.log('音声存在チェック',TARGET != null,TARGET);
+//	console.log('音声存在チェック',TARGET != null,TARGET);
 
 	if(TARGET){
 		TARGET.currentTime = onSlideEnd_time/1000;
@@ -1251,8 +1259,8 @@ function all_play_true(onSlideEnd_time){
 		let NOW = TARGET.currentTime;
 		let TOTAL = TARGET.duration*1000+100;
 		TOTAL = TOTAL - NOW;
-		console.log('NOW：',NOW);
-		console.log('TOTAL：',TOTAL);
+//		console.log('NOW：',NOW);
+//		console.log('TOTAL：',TOTAL);
 		
 		//音声再生時スライダーバー(全体)同期
 		if(!TARGET.paused ){
@@ -1318,12 +1326,12 @@ function show_NOW_all_disp(NOW_all_disp) {
 		NOW_all_disp = NOW_all_set() + PassSec;
 		//スライダーバー(全体)移動
 		rangeslider_change(NOW_all_disp);
-		console.log('スライダーバー位置',NOW_all_disp);
+//		console.log('スライダーバー位置',NOW_all_disp);
 	}else{
 		NOW_all_disp = NOW_all_set() + PassSec;
 		//スライダーバー(全体)移動
 		rangeslider_change(NOW_all_disp);
-		console.log('スライダーバー位置_last',NOW_all_disp);
+//		console.log('スライダーバー位置_last',NOW_all_disp);
 		//タイマークリア
 		clearInterval( PassageID );
 	}
@@ -1696,6 +1704,7 @@ $('#upicon').change(function(){
 
 //自動再生中、アイコン変更ボタン押下⇒自動再生停止処理
 function icon_rec_check(){
+	console.log('all_play_flag',all_play_flag);
 	if(all_play_flag){
 	  		all_play_stop_tmp(); 
 	   }
@@ -1808,8 +1817,8 @@ function icon_list_mk(slide_now_num,icon_name,icon_start_time_new){
 	   }
 	}
 		//アイコン挿入
-		console.log('挿入icon：',icon_new);
-		console.log('新icon_list：',icon_list);
+//		console.log('挿入icon：',icon_new);
+//		console.log('新icon_list：',icon_list);
 		$('#icon').attr("src",icon_dir_path+icon_name);
 }
 	
@@ -2006,6 +2015,18 @@ function rangeslider_slick_change(all_next_time,slide_next_num){
 	//スライド移動 
 	$('.slider'+slide_ul_num).slick('slickGoTo', slide_next_num-1);
 }
+	
+function slide_back(){
+	// 前のスライドへ移動
+	$('.slider'+slide_ul_num).slick('slickPrev');
+}
+	
+function slide_front(){
+	//スライド移動 
+	$('.slider'+slide_ul_num).slick('slickNext');
+}
+	
+	
 	
 </script>
   
