@@ -1979,7 +1979,7 @@ function icon_del_one_db(icon_reset_one_data){
 	
 	$.ajax({
 		type: 'POST',
-		url: 'icon_del_one.php',//★ここから★
+		url: 'icon_del_one.php',
 		data: fd,
 		processData: false,
 		contentType: false
