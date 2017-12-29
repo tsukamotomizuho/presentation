@@ -313,11 +313,11 @@ for($i=1; $i <= $view_slide_num; $i++){
 	 
 	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_rec_icon_slide_rmCheck();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　⑤音声削除</button>
 
-	  <h5>- Recordings status -</h5>
+<!--	  <h5>- Recordings status -</h5>-->
 	  <div id="log" style = "margin-bottom:10px;"></div>   	
 	  <div id="recordingslist"></div>
 
-	  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　⑥自動再生</button>
+	  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　⑥プレビュー</button>
 	  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　⑦一時停止</button>
 
 	</div>
@@ -1006,7 +1006,7 @@ function stopRecording(button) {
       hf.innerHTML = hf.download;
 	//html挿入
       div.appendChild(au);
-//      div.appendChild(hf);
+	//div.appendChild(hf);
       recordingslist.appendChild(div);
 		
 	var audio = new Audio(); // audioの作成
@@ -1043,8 +1043,8 @@ function stopRecording(button) {
 		  window.URL = window.URL || window.webkitURL;
 
 		  audio_context = new AudioContext;
-		  __log('Audio context set up.');
-		  __log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+//		  __log('Audio context set up.');
+//		  __log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
 		} catch (e) {
 		  alert('No web audio support in this browser!');
 		}
@@ -1630,9 +1630,10 @@ function icon_back(){
 	all_next_time += icon_list[icon_list_num].icon_start_time;
 	}
 
-//	console.log('次のiconリスト番号',icon_list_num);
-//	console.log('次のスライド番号',slide_next_num);
-//	console.log('次の総時間',all_next_time);
+	console.log('次のiconリスト番号',icon_list_num);
+	console.log('次のスライド番号',slide_next_num);
+	console.log('次の総時間',all_next_time);
+	console.log('icon_list',icon_list);
 	
   //スライダー＆スライダーバー(全体)一括移動関数
   rangeslider_slick_change(all_next_time,slide_next_num);
@@ -1679,6 +1680,7 @@ function icon_front(){
 	console.log('次のアイコンリスト番号',icon_list_num);
 	console.log('次のスライド番号',slide_next_num);
 	console.log('次の総時間',all_next_time);
+		console.log('icon_list',icon_list);
 
   //スライダー＆スライダーバー(全体)一括移動関数
   rangeslider_slick_change(all_next_time,slide_next_num);
