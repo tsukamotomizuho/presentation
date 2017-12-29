@@ -307,11 +307,11 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</div>
 
 
-	 <button  id="rec" type="button" class="btn btn-danger" onclick="startRecording(this);" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　③音声録音</button>
+	 <button  id="rec" type="button" class="btn btn-danger" onclick="rec_icon_slide_rmCheck();" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　③音声録音</button>
 	 
 	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:10px"><span class="glyphicon glyphicon-pause"></span>　④録音停止</button>
 	 
-	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_Record_one();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　⑤音声削除</button>
+	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_rec_icon_slide_rmCheck();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　⑤音声削除</button>
 
 	  <h5>- Recordings status -</h5>
 	  <div id="log" style = "margin-bottom:10px;"></div>   	
@@ -818,31 +818,28 @@ function slide_ud_one_db(){
 
 $('#slide_update_all').change(function(){
 
-	//1)スライドUL取得処理
-	slide_ul_get(this.files);
-
-	//2)DB登録処理(ajax)
-	slide_ud_all_db();
-	
 	//音声＆アイコン削除の質問
-	voice_icon_rmCheck();
-
-});
-
-//音声削除チェック
-function voice_icon_rmCheck() {
     if( confirm("音声＆アイコンも全て削除しますがよろしいですか？") ) {
 		//音声全削除処理
 		rec_del_all();
 		//アイコン全削除処理
 		icon_del_all();
 		alert("音声＆アイコンも全て削除しました。");
+		
+		//1)スライドUL取得処理
+		slide_ul_get(this.files);
+
+		//2)DB登録処理(ajax)
+		slide_ud_all_db();
+		
 	}
     else {
         alert("スライド一括更新をキャンセルしました。");
     }
-}
 	
+});
+
+
 //2-2)スライドUD-取得処理
 	//初回UL時と同様
 	//slide_ul_get(this.files);
@@ -894,16 +891,29 @@ function slide_ud_all_db(){
 	
 //音声録音フラグ
 let recording_flag = false;
-
-
-//録音開始
-function startRecording(button) {
-
-
-
-//	//音声表示判定
-//	let decision2 = document.getElementById('voice_slide_now_num_'+slide_now_num);
 	
+//録音時スライドごとアイコン削除確認
+function rec_icon_slide_rmCheck() {
+	
+		if( confirm("スライド"+slide_now_num+"枚目に登録済のアイコンも全て削除しますがよろしいですか？") ) {
+			//アイコンスライド単位削除処理
+			icon_del_slide();
+			alert("スライド"+slide_now_num+"枚目に登録済のアイコンを全て削除しました。続けて録音を開始します。");
+			startRecording();
+
+		}
+		else {
+			alert("録音処理をキャンセルしました。");
+		}
+
+}
+	
+	
+//録音開始
+
+function startRecording() {
+
+	   
 	//音声録音フラグ
 	recording_flag = true;
 
@@ -1004,8 +1014,7 @@ function stopRecording(button) {
 		//音声総時間の表示＆スライダー更新
 		voice_time_all_disp(voice_time_split);
 		$('input[type="range"]').rangeslider('update', true);
-//		//アイコンスライド単位削除処理★★
-//		icon_del_slide();
+
 		});
 		
 		//audioタグ＆音声削除ボタン表示切替処理処理
@@ -1103,6 +1112,21 @@ function voice_display(slide_num,slide_now_num){
 
 //⑤音声削除機能-----------------------------------
 
+//音声削除時スライドごとアイコン削除確認
+function del_rec_icon_slide_rmCheck() {
+	
+	if( confirm("スライド"+slide_now_num+"枚目に登録済のアイコンも全て削除しますがよろしいですか？") ) {
+		//アイコンスライド単位削除処理
+		icon_del_slide();
+		//スライド音声のみ削除処理
+		del_Record_one();
+	}
+	else {
+		alert("音声削除処理をキャンセルしました。");
+	}
+}
+
+	
 //1)1スライドの音声のみ削除
 function del_Record_one(){
 
@@ -1483,6 +1507,9 @@ let default_icon_name = '<?=$_SESSION["user_icon"]?>';
 let icon_del_all_flg = false;
 //アイコンスライド単位削除_スライド番号
 let icon_del_slide_num = 0;
+//現在表示すべきアイコン番号
+let icon_disp_list_num =0;
+
 	
 //アイコン初期設定
 function icon_set(){
@@ -1553,9 +1580,12 @@ function icon_disp(onSlideEnd_time){
 		   }
 	   }
 
+	
 	//icon返却
 	console.log('現在表示すべきアイコン：',icon_src_new);
+	console.log('現在表示すべきアイコン番号：',icon_list_num_new);
 	let icon_disp_return ={"icon_name":icon_src_new,"icon_list_num":Number(icon_list_num_new)};
+	
 	
 	//アイコン枚数表示処理
 	icon_num_disp(icon_list_num_new+1);
@@ -1619,7 +1649,7 @@ function icon_front(){
 	//移動後のスライド番号(デフォルトは最終スライド)
 	let slide_next_num = slide_num;
 	
-	if(icon_list_num !== icon_list.length-1){
+	if(icon_list_num !== icon_list.length - 1){
 		//アイコンリスト番号を一つ進める
 		icon_list_num++;
 		//スライド番号を更新
@@ -1638,9 +1668,9 @@ function icon_front(){
 	
 	all_next_time += icon_list[icon_list_num].icon_start_time;
 
-//	console.log('次のアイコンリスト番号',icon_list_num);
-//	console.log('次のスライド番号',slide_next_num);
-//	console.log('次の総時間',all_next_time);
+	console.log('次のアイコンリスト番号',icon_list_num);
+	console.log('次のスライド番号',slide_next_num);
+	console.log('次の総時間',all_next_time);
 
   //スライダー＆スライダーバー(全体)一括移動関数
   rangeslider_slick_change(all_next_time,slide_next_num);
@@ -1881,6 +1911,83 @@ function icon_reset_slide(){
 
 }
 
+//2)アイコン単体削除処理
+function icon_del_one(){
+	
+	//1)アイコン単体削除リスト更新(javascript)
+	let icon_reset_one_data = icon_reset_one();		
+	//2)DB削除処理(ajax)
+	icon_del_one_db(icon_reset_one_data);
+	
+	console.log('新しいicon_list：',icon_list);
+}
+
+	
+//アイコン単体削除処理
+function icon_reset_one(){
+	
+	let icon_reset_one_data;
+
+	//スライド単体での秒数
+	let onSlideEnd_time = onSlideEnd_output().onSlideEnd_time;
+	
+	let icon_list_del_num = icon_disp(onSlideEnd_time).icon_list_num;
+	
+	console.log('アイコン単体削除実行中',icon_list_del_num,'番目のアイコンを削除');
+	let icon_time_chk = icon_list[icon_list_del_num].icon_start_time;
+	
+	if(icon_time_chk == 0){
+		console.log('スライド最初のアイコン。デフォルト上書き保存');
+		icon_list[icon_list_del_num].icon_data = default_icon_name;
+
+		//アイコン枚数表示処理(上書き保存なので、リスト番号表示には繰り上げが必要)
+		icon_num_disp(icon_list_del_num+1);
+		//(デフォルト)アイコン挿入
+		$('#icon').attr("src",icon_dir_path+default_icon_name);
+		
+		//削除情報取得
+		icon_reset_one_data = icon_list[icon_list_del_num];
+
+	   }else{
+
+		//削除情報取得
+		icon_reset_one_data = icon_list[icon_list_del_num];
+
+		console.log('スライド中のアイコン。削除'); icon_list.splice(icon_list_del_num,1);
+		   
+		//アイコン枚数表示処理(削除後の番号なので-1されるからリスト番号表示は繰り上げなくてよい)
+		icon_num_disp(icon_list_del_num);
+		//(デフォルト)アイコン挿入
+		   $('#icon').attr("src",icon_dir_path+icon_list[icon_list_del_num-1].icon_data);
+ 	   }
+	
+	return icon_reset_one_data;
+}
+
+
+function icon_del_one_db(icon_reset_one_data){
+	
+	console.log('icon_reset_one_data',icon_reset_one_data);
+	
+	//送信データ作成
+	var fd = new FormData();
+		//$postで確認
+		fd.append('slide_group', slide_group);
+		//全削除:0、スライド単位削除:0以上
+		fd.append('slide_now_num', icon_reset_one_data.slide_now_num);
+		fd.append('icon_start_time', icon_reset_one_data.icon_start_time);
+	
+	$.ajax({
+		type: 'POST',
+		url: 'icon_del_one.php',//★ここから★
+		data: fd,
+		processData: false,
+		contentType: false
+	}).done(function(data) {
+		console.log(data);
+		console.log('アイコン単体削除処理終了');
+	});
+}
 	
 //スライダー＆スライダーバー(全体)一括移動関数
 function rangeslider_slick_change(all_next_time,slide_next_num){
@@ -1888,6 +1995,8 @@ function rangeslider_slick_change(all_next_time,slide_next_num){
 	//slide_next_num：移動後のスライド番号
 	
 	console.log('slide_next_num',slide_next_num);
+	console.log('all_next_time',all_next_time);
+	
 	//スライダーバー(全体)移動
 	rangeslider_change(all_next_time);
 
