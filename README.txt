@@ -1,10 +1,14 @@
 # presentation
-最新リビジョン：r50
+最新リビジョン：r51
 
-・環境(サーバ)：xammp
+・環境(サーバ)：さくらサーバ
+・サイトurl：
+  https://real-presen.sakura.ne.jp/presen_mk.php
+
+
 ・DB情報：presentation_db_r5.sql 最新：2017/12/22
 
-・画面遷移図：　★NEW 2017/12/31
+・画面遷移図：　
 　https://www.dropbox.com/s/hm6uewsob05n860/%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3_r1.ppt?dl=0
 
 ==================================================================================
