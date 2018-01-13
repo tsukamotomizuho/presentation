@@ -1,7 +1,7 @@
 # presentation
-最新リビジョン：r51
+最新リビジョン：r53
 
-・環境(サーバ)：さくらサーバ
+・環境(サーバ)：さくらサーバ ★NEW 2018/1/13
 ・サイトurl：
   https://real-presen.sakura.ne.jp/presen_mk.php
 
