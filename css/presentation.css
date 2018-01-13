@@ -116,14 +116,28 @@ label{
 	
 }
 
-.slide_info ,.icon_info{
-	background-color: #777;
-	color: #fff;
+.slide_info {
+/*	background-color: #777;*/
+	text-align: center;
+/*	color: #fff;*/
+	width: 100%;
+	font-size: 25px;
+	margin: 10px auto;
+/*
+	border: 5px solid #888;
 	border-radius: 10px;
+*/
+}
+
+.icon_info{
+/*	background-color: #777;*/
+	text-align: center;
+/*	color: #fff;*/
+/*	border-radius: 10px;*/
 	width: 100%;
 	font-size: 20px;
 	margin: 10px auto;
-	border: 10px solid #888;
+/*	border: 10px solid #888;*/
 	
 }
 
@@ -132,6 +146,13 @@ label{
 	color: #fff;
 /*	border: 3px solid #888;*/
 	cursor:pointer;
+}
+
+.icon_btn_area{
+  display: flex;
+	justify-content: center;/* 3 */
+    align-items: center;
+
 }
 
 .con_btn_area{

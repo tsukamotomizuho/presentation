@@ -6,7 +6,7 @@ include("functions.php");
 //ssidChk();//セッションチェック関数
 
 //セッション関数(ユーザ情報)
-$_SESSION["user_name"] = 'トロ' ;
+$_SESSION["user_name"] = '発表者';
 //ユーザid
 $_SESSION["user_id"] = '1' ;
 //アイコン画像名
@@ -23,22 +23,23 @@ $pdo = db_con();
 $view_slide_group ="なし";
 $view_slide_num  ='';//スライドの総数
 
-//①スライド総数と最新のスライドグループ(★要検討)を取得
-	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
-	$status = $stmt->execute();
-	//実行後、エラーだったらfalseが返る
-
-	//最新の取得スライドからslide_groupとslide_numを取得
-	if($status==false){
-		queryError($stmt);
-	}else{//正常
-		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-			$view_slide_group = $r["slide_group"];
-			$view_slide_num      = $r["slide_num"];
-		}
-	}
+//リロードする度新規作成画面にするため、コメントアウト。ユーザ登録ができるようになったら復活させる想定
+////①スライド総数と最新のスライドグループ(★要検討)を取得
+//	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
+//	$status = $stmt->execute();
+//	//実行後、エラーだったらfalseが返る
+//
+//	//最新の取得スライドからslide_groupとslide_numを取得
+//	if($status==false){
+//		queryError($stmt);
+//	}else{//正常
+//		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+//			$view_slide_group = $r["slide_group"];
+//			$view_slide_num      = $r["slide_num"];
+//		}
+//	}
 		
-	
+
 $view_slide = '<div class="slider0">';//slider開始タグ
 $view_slide_id   = "なし";
 $view_slide_data ='';//スライド画像ファイル名
@@ -132,8 +133,8 @@ for($i=1; $i <= $view_slide_num; $i++){
 				$view_voice_time_copy    .= $r["voice_time"].'/';
 
 				$view_voice .= '<div id="voice_slide_now_num_'.$i.'" style="display: block;">';//開始タグ
-				$view_voice .= 'スライド'.$i.'枚目の音声';
-				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" controlslist="nodownload" src="'.$voice_file_dir_path.$view_voice_data.'" ></audio>';
+//				$view_voice .= 'スライド'.$i.'枚目の音声';
+				$view_voice .= '<audio id="voice_slide_now_num_'.$i.'_audio" controls="" controlslist="nodownload" src="'.$voice_file_dir_path.$view_voice_data.'" style="display:none;" ></audio>';
 				$view_voice .= '</div>';//終了タグ
 			}
 		}  
@@ -256,39 +257,33 @@ for($i=1; $i <= $view_slide_num; $i++){
   <div class="row">
 	<div class="col-xs-4 col-sm-3 select_div" >
 		<div>
-		
-			<div class="icon_info">
-			  <p><?=$_SESSION["user_name"]?></p> 
-			</div>
-
 
 			<div class="icon_area">
 				<img id="icon" src="img/icon_sample.png" class="img-responsive img-rounded icon" alt="アイコン画像">
 			</div>
 			<div class="icon_btn_area">
 				<button id="icon_back" type="button" class="btn icon_btn"  onclick="icon_back();"><span class="glyphicon glyphicon-chevron-left" ></span></button>
+				<div class="icon-counter"><span class="icon_current"></span> of <span class="icon_total"></span></div>
 				<button id="icon_front" type="button" class="btn icon_btn" onclick="icon_front();"><span class="glyphicon glyphicon-chevron-right" ></span></button>
 			</div>
-			<div class="icon-counter"><span class="icon_current"></span> / <span class="icon_total"></span>　icon</div>
+
+			<div class="icon_info">
+			  <p><?=$_SESSION["user_name"]?>さん</p> 
+			</div>
 
 
 		</div>
 
-	<form id="upicon_form" method="post" action="icon_insert_update.php" enctype="multipart/form-data">
-		<label for="upicon">
-			<h3><div class="label label-warning btn_effect" onclick="icon_rec_check();"><span class="glyphicon glyphicon-user" >up</span>　①アイコン登録</div></h3>
-			<input type="file" id="upicon"  class="btn btn-warning"  name="upicon" style="display:none;" />
-		</label>
-	</form>
-
-	<!-- 1)アイコン全削除処理-->
-	 <button  id="icon_del_all" type="button" class="btn btn-warning" onclick="icon_del_all();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×all</span></button>
-	<!-- 2)アイコンスライド単位削除処理-->
-	 <button  id="icon_del_slide" type="button" class="btn btn-warning" onclick="icon_del_slide();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×slide</span></button>
-	<!-- 3)アイコン単体削除処理-->
-	 <button  id="icon_del_one" type="button" class="btn btn-warning" onclick="icon_del_one();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×1</span></button>
+<!--
+		<form id="upfile_form" method="post" action="slide_insert.php" enctype="multipart/form-data">
+			<label for="upfile">
+			<h3><span class="label label-warning btn_effect">スライド登録(フォルダ)</span></h3>
+				<input type="file" id="upfile"  class="btn btn-warning"  name="upfile[]" webkitdirectorywebkitdirectory style="display:none;" />
+			</label>
+		</form>
+-->
 	  
-		<button  id="slide_update" type="button" class="btn btn-primary" onclick="slide_update();" style="margin-bottom:10px"><span class="glyphicon glyphicon-wrench"></span>　②スライド変更</button>
+		<button  id="slide_update" type="button" class="btn btn-primary" onclick="slide_update();" style="margin-bottom:10px"><span class="glyphicon glyphicon-wrench"></span>　スライド変更</button>
 
 	<div id="update_type" style="display:none;">
 		<form id="update_form_one" method="post" action="slide_insert.php" enctype="multipart/form-data">
@@ -307,18 +302,32 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</div>
 
 
-	 <button  id="rec" type="button" class="btn btn-danger" onclick="rec_icon_slide_rmCheck();" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　③音声録音</button>
+	 <button  id="rec" type="button" class="btn btn-danger" onclick="rec_icon_slide_rmCheck();" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　音声録音</button>
 	 
-	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:10px"><span class="glyphicon glyphicon-pause"></span>　④録音停止</button>
+	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:10px"><span class="glyphicon glyphicon-pause"></span>　録音停止</button>
 	 
-	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_rec_icon_slide_rmCheck();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　⑤音声削除</button>
+	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_rec_icon_slide_rmCheck();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　音声削除</button>
 
 <!--	  <h5>- Recordings status -</h5>-->
 	  <div id="log" style = "margin-bottom:10px;"></div>   	
 	  <div id="recordingslist"></div>
 
-	  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　⑥プレビュー</button>
-	  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　⑦一時停止</button>
+	  <button id="all_play" type="button" class="btn btn-success all_play" onclick="all_play_btn();"><span class="glyphicon glyphicon-play"></span>　プレビュー</button>
+	  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　一時停止</button>
+	  
+	<form id="upicon_form" method="post" action="icon_insert_update.php" enctype="multipart/form-data">
+		<label for="upicon">
+			<h3><div class="label label-warning btn_effect" onclick="icon_rec_check();"><span class="glyphicon glyphicon-user" >up</span>　アイコン登録</div></h3>
+			<input type="file" id="upicon"  class="btn btn-warning"  name="upicon" style="display:none;" />
+		</label>
+	</form>
+
+	<!-- 1)アイコン全削除処理-->
+	 <button  id="icon_del_all" type="button" class="btn btn-warning" onclick="icon_del_all();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×all</span></button>
+	<!-- 2)アイコンスライド単位削除処理-->
+	 <button  id="icon_del_slide" type="button" class="btn btn-warning" onclick="icon_del_slide();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×slide</span></button>
+	<!-- 3)アイコン単体削除処理-->
+	 <button  id="icon_del_one" type="button" class="btn btn-warning" onclick="icon_del_one();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×1</span></button>
 
 	</div>
 	
@@ -326,10 +335,6 @@ for($i=1; $i <= $view_slide_num; $i++){
    
 		
 	<div class="col-xs-7 col-sm-8" >
-		<div class="slide_info">
-			<div id="slide_name">スライド名：</div>
-<!--			<div class="slick-counter"><span class="current"></span> 枚目/ <span class="total"></span>枚中</div>-->
-		</div>
 		<div class="slide_area">
 		
 	<div class="sample_slide" >
@@ -348,8 +353,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<input id="rangeslider" type="range" min="0" max="100" value="0" data-rangeslider>
 			<output style="display:none;"></output>
 			<div id="time_area" style="margin-top:10px;">
-			
-		</div>
+			</div>
 			<div class="slidebar_btn_area">
 				<button id="slide_back" type="button" class="btn slide_btn slick-arrow"  onclick="slide_back();"><span class="glyphicon glyphicon-chevron-left" ></span></button>
 				<div class="slidebar_counter">
@@ -359,6 +363,9 @@ for($i=1; $i <= $view_slide_num; $i++){
 				<button id="slide_front" type="button" class="btn slide_btn slick-arrow" onclick="slide_front();"><span class="glyphicon glyphicon-chevron-right" ></span></button>
 			</div>
 
+		</div>
+		<div class="slide_info">
+			<div id="slide_name">お題：</div>
 		</div>
 	</div>
 
@@ -420,16 +427,10 @@ $(function () {
 
 	if(slide_id != 'なし'){
 		//スライドデバッグ用
-		slide_name ='<?=$view_slide_name?>';
+		slide_name ='『<?=$view_slide_name?>』';
 		let view_slide_data ='<?=$view_slide_data_copy?>';
 		let view_slide_num = '<?=$view_slide_num?>';
 		slide_group = '<?=$view_slide_group?>';
-
-//		console.log('スライド名',slide_name);
-//		console.log('スライドデータ',view_slide_data);
-//		console.log('スライドid',slide_id);
-//		console.log('スライドグループid',slide_group);
-//		console.log('スライド総数',view_slide_num);
 
 	   $('.sample_slide').remove();
 	   $('#slide_name').append(slide_name);
@@ -550,10 +551,7 @@ function slickjs(){
 		  
 		  	slide_num = slick.slideCount;//スライド総数
 			slide_now_num =slick.currentSlide + 1;//現在のスライド番号
-		  
-//		    console.log("slide_num：",slide_num);
-//			console.log("slide_now_num：",slide_now_num);
-		  
+		  		  
 			//audioタグ＆音声削除ボタン表示切替処理処理
 			  voice_display(slide_num,slide_now_num);
 		  
@@ -641,6 +639,40 @@ $('#upfile').change(function(){
 	
 });
 
+//スライドファイル名ソート処理
+function associative_sort(a){
+  var x=[],b={};
+  for(key in a){
+    x.push([key,a[key]]);
+  }
+	let splice_num = x.length-2;
+	console.log('splice_num',splice_num);
+	
+		x.splice(x.length-2, 2);
+		console.log('x',x);
+
+  x.sort((a, b) => {
+	  const a1 = parseInt(a[1].name.replace(/[^0-9]/g, ''), 10);
+	  const b1 = parseInt(b[1].name.replace(/[^0-9]/g, ''), 10);
+	  const a2 = (a1 !== a1) ? 0 : a1;
+	  const b2 = (b1 !== b1) ? 0 : b1;
+
+	  if (a2 > b2) {
+		  return 1;
+	  } else if (a2 < b2) {
+		  return -1;
+	  }
+	  return 0;
+	});
+
+
+  for(i=0;i<x.length;i++){
+    b[i]=x[i][1];
+  }
+//	console.log('b',b);	
+  return b;
+}
+
 
 //1)スライドUL-取得処理
 function slide_ul_get(this_files){
@@ -653,7 +685,17 @@ function slide_ul_get(this_files){
 	
 	//スライドデータ(DB登録用)
 	console.log('this_files',this_files);
-	slide_data_ul = this_files;
+	
+	let this_files_sorted = associative_sort(this_files);
+	
+	console.log('this_files_sorted',this_files_sorted);
+
+//	for (let i = 0; i < this_files.length; i++) {
+//		
+//		this_files[i] = this_files_sorted[i];//失敗する★★
+//	}
+//	console.log('this_files2',this_files);
+//	slide_data_ul = this_files_sorted;
 	
 	//スライドデータ(html表示用)
 	let slide_data ='';
@@ -679,11 +721,22 @@ function slide_ul_get(this_files){
 	//スライダー更新
 	$('input[type="range"]').rangeslider('update', true);
 	
+	//ソート済スライド番号情報生成
+	slide_data_ul = '';
 	//ULされたスライドのhtmlを作成
 	for (let i = 0; i < this_files.length; i++) {
 
+		//ソート済ファイル番号
+		let sorted_num;
+		for (let x = 0; x < this_files.length; x++) {
+			if(this_files[x].name == this_files_sorted[i].name){
+				sorted_num = x;
+				slide_data_ul += x + '/'; 
+			}
+		}
+		
 		// 選択されたファイル情報を取得
-		let file = this_files[i];
+		let file = this_files[sorted_num];
 
 		//アップロードされたファイル名からスライド名を取得
 		slide_name = file['webkitRelativePath'].split('/')[0];
@@ -717,6 +770,8 @@ function slide_ul_get(this_files){
 			}
 		}
 	}
+	
+	   $('#slide_name').append('『'+slide_name+'』');
 
 }
 	
@@ -726,7 +781,9 @@ function slide_ul_db(){
 	let fd = new FormData($('#upfile_form').get(0));
 	//$postで確認
 	fd.append('slide_name', slide_name);
+	fd.append('slide_data_ul', slide_data_ul);
 
+	
 	$.ajax({
 		type: 'POST',
 		url: 'slide_insert.php',
@@ -862,6 +919,8 @@ function slide_ud_all_db(){
 	//$postで確認
 	fd.append('slide_name', slide_name);
 	fd.append('slide_group', slide_group);
+	fd.append('slide_data_ul', slide_data_ul);
+
 
 	$.ajax({
 		type: 'POST',
@@ -903,19 +962,30 @@ function slide_ud_all_db(){
 //音声録音フラグ
 let recording_flag = false;
 	
-//録音時スライドごとアイコン削除確認
+//録音時スライドごとアイコン削除（確認）確認処理を入れると、余計なクリック音が録音されるので、本処理は保留
 function rec_icon_slide_rmCheck() {
-	
-		if( confirm("スライド"+slide_now_num+"枚目に登録済のアイコンも全て削除しますがよろしいですか？") ) {
-			//アイコンスライド単位削除処理
+
 			icon_del_slide();
-			alert("スライド"+slide_now_num+"枚目に登録済のアイコンを全て削除しました。続けて録音を開始します。");
 			startRecording();
 
-		}
-		else {
-			alert("録音処理をキャンセルしました。");
-		}
+	//録音削除ボタンの表示判定
+	let decision2 = document.getElementById('voice_slide_now_num_'+slide_now_num);
+	
+	if(decision2){
+		//要素が存在したら～
+		$('#rec_del').hide();
+	}
+
+//		if( confirm("スライド"+slide_now_num+"枚目に登録済のアイコンも全て削除しますがよろしいですか？") ) {
+//			//アイコンスライド単位削除処理
+//			icon_del_slide();
+//			alert("スライド"+slide_now_num+"枚目に登録済のアイコンを全て削除しました。続けて録音を開始します。");
+//			startRecording();
+//
+//		}
+//		else {
+//			alert("録音処理をキャンセルしました。");
+//		}
 
 }
 	
@@ -991,14 +1061,15 @@ function stopRecording(button) {
 	//divタグ編集
 	div.id = 'voice_slide_now_num_'+slide_now_num;
 	div.style ="display: block;";
-	div.innerHTML = 'スライド'+slide_now_num+'枚目の音声';
+//	div.innerHTML = 'スライド'+slide_now_num+'枚目の音声';
 
 		
 	//audioタグ編集
       au.controls = true;
       au.src = url;
 	  au.id = 'voice_slide_now_num_'+slide_now_num+'_audio';
-
+		au.style ="display:none;";
+		
 	//aタグ(音声DL)編集
       hf.href = url;
 	//ダウンロード属性
@@ -1114,8 +1185,6 @@ function voice_display(slide_num,slide_now_num){
 
 	}
 }
-	
-
 	
 
 //⑤音声削除機能-----------------------------------
