@@ -3,9 +3,9 @@
 
 //DB接続関数（PDO）
 function db_con(){
-  $dbname='presentation_db';//テーブル名
+  $dbname='real-presen_db';//テーブル名
   try {
-    $pdo = new PDO('mysql:dbname='.$dbname.';charset=utf8;host=localhost','root','');
+    $pdo = new PDO('mysql:dbname='.$dbname.';charset=utf8;host=mysql307.db.sakura.ne.jp','real-presen','real-presen_root');
 	  //xampはid:root,passは空
   } catch (PDOException $e) {
     exit('DbConnectError:'.$e->getMessage());
