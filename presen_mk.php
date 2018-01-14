@@ -245,7 +245,7 @@ for($i=1; $i <= $view_slide_num; $i++){
           <a class="navbar-brand" href="#">真・プレゼン共有</a>
 	</div>
     <ul class="nav navbar-nav navbar-right">
-      <li class="active"><a href="#">プレゼン新規作成</a></li>
+      <li class="active"><a href="https://real-presen.sakura.ne.jp/presen_mk.php">プレゼン新規作成</a></li>
       <li id="presen_play_nav" style="display:none;"><a href="#">プレゼン視聴</a></li>
     </ul>
   </div>
