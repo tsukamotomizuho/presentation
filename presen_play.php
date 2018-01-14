@@ -12,8 +12,13 @@ $_SESSION["user_id"] = '1' ;
 //アイコン画像名
 $_SESSION["user_icon"] = 'icon_sample.png' ;
 
-//データがないときの処理記述要？★
+//1.GET受信
+$slide_group = $_GET["slide_group"];//スライドグループ
+$slide_num   = $_GET["slide_num"];//スライド数
 
+echo 'スライドグループ：$slide_group='.$slide_group;
+echo '/　スライド数：$slide_num='.$slide_num;
+//ここから！！★プレゼン再生処理★
 
 //2. DB接続
 $pdo = db_con();
@@ -25,19 +30,19 @@ $view_slide_num  ='';//スライドの総数
 
 //リロードする度新規作成画面にするため、コメントアウト。ユーザ登録ができるようになったら復活させる想定
 ////①スライド総数と最新のスライドグループ(★要検討)を取得
-	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
-	$status = $stmt->execute();
-	//実行後、エラーだったらfalseが返る
-
-	//最新の取得スライドからslide_groupとslide_numを取得
-	if($status==false){
-		queryError($stmt);
-	}else{//正常
-		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-			$view_slide_group = $r["slide_group"];
-			$view_slide_num      = $r["slide_num"];
-		}
-	}
+//	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
+//	$status = $stmt->execute();
+//	//実行後、エラーだったらfalseが返る
+//
+//	//最新の取得スライドからslide_groupとslide_numを取得
+//	if($status==false){
+//		queryError($stmt);
+//	}else{//正常
+//		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+//			$view_slide_group = $r["slide_group"];
+//			$view_slide_num      = $r["slide_num"];
+//		}
+//	}
 		
 
 $view_slide = '<div class="slider0">';//slider開始タグ
@@ -479,15 +484,11 @@ $(function () {
 		let view_slide_data ='<?=$view_slide_data_copy?>';
 		let view_slide_num = '<?=$view_slide_num?>';
 		slide_group = '<?=$view_slide_group?>';
-		slide_num = view_slide_num;
-		
-		//初期スライドULエリア削除
+
 	   $('.sample_slide').remove();
-		//スライド名（お題）表示
 	   $('#slide_name').append(slide_name);
 
-		//リンク生成
-		link_mk();
+		slide_num = view_slide_num;
 
 	   }else{
 		   //データ未登録時の処理★★要検討
@@ -857,12 +858,11 @@ function slide_ul_db(){
 	});
 }
 
-//リンク生成処理
 function link_mk(){
 	//視聴リンク生成
-    $('#play_link').attr("value","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
+    $('#play_link').attr("value","https://real-presen.sakura.ne.jp/presen_play.php?group_id="+slide_group+"&slide_num="+slide_num);
 	//編集リンク生成
-    $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?slide_group="+slide_group+"&slide_num="+slide_num);
+    $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?group_id="+slide_group+"&slide_num="+slide_num);
 }
 
 
