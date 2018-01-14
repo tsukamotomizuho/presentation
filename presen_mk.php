@@ -232,15 +232,23 @@ for($i=1; $i <= $view_slide_num; $i++){
 <script src="slick-1.8.0/slick/slick.min.js"></script>
 <!--slick-->
  
-  <title>home</title>
+  <title>真・プレゼン共有</title>
 </head>
 
 <body>
 
 <!-- Head[Start] -->
 <header>
-<nav class="navbar navbar-default">
-	<h3>スライド作成画面</h3>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+          <a class="navbar-brand" href="#">真・プレゼン共有</a>
+	</div>
+    <ul class="nav navbar-nav navbar-right">
+      <li class="active"><a href="#">プレゼン新規作成</a></li>
+      <li id="presen_play_nav" style="display:none;"><a href="#">プレゼン視聴</a></li>
+    </ul>
+  </div>
 </nav>
 
 </header>
@@ -328,8 +336,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 	 <button  id="icon_del_slide" type="button" class="btn btn-warning" onclick="icon_del_slide();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×slide</span></button>
 	<!-- 3)アイコン単体削除処理-->
 	 <button  id="icon_del_one" type="button" class="btn btn-warning" onclick="icon_del_one();" style="margin-bottom:10px"><span class="glyphicon glyphicon-trash" >×1</span></button>
-	 
-<!--	<button id="play_link_mk" type="button" class="btn btn-default" onclick="play_link_mk();"><span class="glyphicon glyphicon-link"></span>　再生リンク作成</button>	 -->
+
 
 	
 	<!-- Trigger -->
@@ -412,8 +419,8 @@ for($i=1; $i <= $view_slide_num; $i++){
 			</div>
 
 		</div>
-		<div class="slide_info">
-			<div id="slide_name">お題：</div>
+		<div class="slide_info">お題
+			<div id="slide_name"></div>
 		</div>
 	</div>
 
@@ -863,6 +870,10 @@ function link_mk(){
     $('#play_link').attr("value","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
 	//編集リンク生成
     $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?slide_group="+slide_group+"&slide_num="+slide_num);
+	
+	//視聴リンクナビゲーション表示
+	$('#presen_play_nav').show();
+    $('#presen_play_nav > a').attr("href","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
 }
 
 
