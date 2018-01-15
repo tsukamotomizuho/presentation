@@ -333,7 +333,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
-			<input id="rangeslider" type="range" min="0" max="100" value="0" data-rangeslider>
+			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.001"  data-rangeslider>
 			<output style="display:none;"></output>
 			<div id="time_area" style="margin-top:10px;">
 			</div>

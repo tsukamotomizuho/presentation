@@ -8,8 +8,8 @@
 
 ・DB情報：presentation_db_r5.sql 最新：2017/12/22
 
-・画面遷移図：　
-　https://www.dropbox.com/s/hm6uewsob05n860/%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3_r1.ppt?dl=0
+・画面遷移図_r2：
+　https://www.dropbox.com/s/cyzalair3q6p5wu/%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3_r2.ppt?dl=0
 
 
 ==================================================================================

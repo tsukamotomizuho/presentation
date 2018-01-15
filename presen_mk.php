@@ -25,19 +25,19 @@ $view_slide_num  ='';//スライドの総数
 
 //リロードする度新規作成画面にするため、コメントアウト。ユーザ登録ができるようになったら復活させる想定
 ////①スライド総数と最新のスライドグループ(★要検討)を取得
-	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
-	$status = $stmt->execute();
-	//実行後、エラーだったらfalseが返る
-
-	//最新の取得スライドからslide_groupとslide_numを取得
-	if($status==false){
-		queryError($stmt);
-	}else{//正常
-		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-			$view_slide_group = $r["slide_group"];
-			$view_slide_num      = $r["slide_num"];
-		}
-	}
+//	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
+//	$status = $stmt->execute();
+//	//実行後、エラーだったらfalseが返る
+//
+//	//最新の取得スライドからslide_groupとslide_numを取得
+//	if($status==false){
+//		queryError($stmt);
+//	}else{//正常
+//		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+//			$view_slide_group = $r["slide_group"];
+//			$view_slide_num      = $r["slide_num"];
+//		}
+//	}
 		
 
 $view_slide = '<div class="slider0">';//slider開始タグ
@@ -310,11 +310,11 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</div>
 
 
-	 <button  id="rec" type="button" class="btn btn-danger" onclick="rec_icon_slide_rmCheck();" style="margin-bottom:10px"><span class="glyphicon glyphicon-record"></span>　音声録音</button>
+	 <button  id="rec" type="button" class="btn btn-danger" onclick="rec_icon_slide_rmCheck();" style="margin-bottom:10px" ><span class="glyphicon glyphicon-record"></span>　音声録音</button>
 	 
 	 <button  id="rec_stop" type="button" class="btn btn-danger" onclick="stopRecording(this);" style="display:none;"style="margin-bottom:10px"><span class="glyphicon glyphicon-pause"></span>　録音停止</button>
 	 
-	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_rec_icon_slide_rmCheck();" style="margin-bottom:10px" style="display: block;" ><span class="glyphicon glyphicon-remove"></span>　音声削除</button>
+	 <button  id="rec_del" type="button" class="btn btn-danger" onclick="del_rec_icon_slide_rmCheck();" style="margin-bottom:10px" style="display: block;"  data-toggle="popover" data-trigger="hover" data-placement="top" data-content="現在のスライドページに設定済の発表者アイコンもすべて削除されます。"><span class="glyphicon glyphicon-remove"></span>　音声削除</button>
 
 <!--	  <h5>- Recordings status -</h5>-->
 	  <div id="log" style = "margin-bottom:10px;"></div>   	
@@ -405,7 +405,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
-			<input id="rangeslider" type="range" min="0" max="100" value="0" data-rangeslider>
+			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.001"  data-rangeslider>
 			<output style="display:none;"></output>
 			<div id="time_area" style="margin-top:10px;">
 			</div>
@@ -516,7 +516,6 @@ $(function () {
 
 			//スライド全体での秒数
 			let output = $('#rangeslider').val();
-//			console.log('onSlide_all_slide：',output);
 			$('output').html(output);
 			console.log('スライド全体での秒数:',output);
 
@@ -1157,6 +1156,7 @@ function stopRecording(button) {
 	audio.addEventListener('loadedmetadata',function(e) {
 		// 音声時間の取得
 		let voice_time = audio.duration*1000;
+		voice_time = Math.round(voice_time*10)/10;
 		console.log('時間(ms)：',voice_time); 
 		voice_ul(blob,voice_time);//音声アップロード
 
@@ -1635,7 +1635,7 @@ function onSlideEnd_output(){
 	onSlideEnd_time = Number(onSlideEnd_time);
 	
 	let onSlideEnd_return ={"onSlideEnd_time":onSlideEnd_time,"onSlideEnd_slide_num":onSlideEnd_slide_num};
-//	console.log('onSlideEnd_return',onSlideEnd_return);
+	console.log('onSlideEnd_return',onSlideEnd_return);
 	
 	return onSlideEnd_return;
 }
@@ -1902,6 +1902,8 @@ function icon_ul_db(icon_start_time_new){
 	console.log('新icon_name:',icon_name);
 	//アイコンリスト更新
 	icon_list_mk(slide_now_num,icon_name,icon_start_time_new);
+	
+	console.log('icon_list',icon_list);
 		
 	});
 }
