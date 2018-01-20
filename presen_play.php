@@ -7,10 +7,20 @@ include("functions.php");
 
 //セッション関数(ユーザ情報)
 $_SESSION["user_name"] = '発表者';
-//ユーザid
-$_SESSION["user_id"] = '1' ;
+////ユーザid⇒presen_mkでのみ使用するパラメータとする
+//$_SESSION["user_id"] = '1' ;
 //アイコン画像名
 $_SESSION["user_icon"] = 'icon_sample.png' ;
+
+//入力チェック(受信確認処理追加)　ソート処理①
+if(
+  !isset($_GET["slide_group"]) || $_GET["slide_group"]=="" ||
+  !isset($_GET["slide_num"]) || 
+  $_GET["slide_num"]=="" 
+){
+  exit('ParamError');
+}
+
 
 //1.GET受信
 $view_slide_group = $_GET["slide_group"];//スライドグループ
@@ -35,13 +45,19 @@ $file_dir_path = "upload_slide/";  //画像ファイル保管先
 	for($i=1; $i <= $view_slide_num; $i++){
 
 		//sqlのselect実行結果(件数)確認用
+//		$stmt = $pdo->prepare("SELECT * FROM slide_table 
+//			WHERE user_id =".$_SESSION["user_id"]." AND 
+//			slide_group =".$view_slide_group." AND 
+//			slide_num =".$view_slide_num." AND 
+//			slide_now_num =".$i." 
+//			ORDER BY slide_id DESC LIMIT 1");
+		
 		$stmt = $pdo->prepare("SELECT * FROM slide_table 
-			WHERE user_id =".$_SESSION["user_id"]." AND 
+			WHERE 
 			slide_group =".$view_slide_group." AND 
 			slide_num =".$view_slide_num." AND 
 			slide_now_num =".$i." 
 			ORDER BY slide_id DESC LIMIT 1");
-		
 		$status = $stmt->execute();
 
 	//表示html作成
@@ -75,8 +91,13 @@ $file_dir_path = "upload_slide/";  //画像ファイル保管先
 for($i=1; $i <= $view_slide_num; $i++){
 		
 		//sqlのselect実行結果(件数)確認用
+//		$sql = 'SELECT COUNT(*) FROM voice_table 
+//		WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		slide_group ='.$view_slide_group.' AND 
+//		slide_now_num ='.$i;
+	
 		$sql = 'SELECT COUNT(*) FROM voice_table 
-		WHERE user_id ='.$_SESSION["user_id"].' AND 
+		WHERE 
 		slide_group ='.$view_slide_group.' AND 
 		slide_now_num ='.$i;
 	
@@ -84,11 +105,15 @@ for($i=1; $i <= $view_slide_num; $i++){
 		$status1 = $res->execute();
 		
 		//sqlのselect実行文(最新の音声を取得)
-		$voice_table_sql = 'SELECT * FROM voice_table WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		$voice_table_sql = 'SELECT * FROM voice_table WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		slide_group ='.$view_slide_group.' AND 
+//		slide_now_num ='.$i.' 
+//		ORDER BY voice_id DESC LIMIT 1';
+		$voice_table_sql = 'SELECT * FROM voice_table WHERE 
 		slide_group ='.$view_slide_group.' AND 
 		slide_now_num ='.$i.' 
 		ORDER BY voice_id DESC LIMIT 1';
-
+	
 		$stmt = $pdo->prepare($voice_table_sql);
 		$status2 = $stmt->execute();
 		//実行後、エラーだったらfalseが返る
@@ -135,16 +160,23 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 //6．SQLを作成(アイコン取得)＆アイコンリスト作成
 		//sqlのselect実行結果(件数)確認用
+//		$sql = 'SELECT COUNT(*) FROM icon_table 
+//		WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		slide_group ='.$view_slide_group;
 		$sql = 'SELECT COUNT(*) FROM icon_table 
-		WHERE user_id ='.$_SESSION["user_id"].' AND 
+		WHERE 
 		slide_group ='.$view_slide_group;
-	
+
 		$res = $pdo->prepare($sql);
 		$status1 = $res->execute();
 		
 		//sqlのselect実行文(最新の音声を取得)
+//		$voice_table_sql = 'SELECT * FROM icon_table 
+//		WHERE user_id ='.$_SESSION["user_id"].' AND 
+//		slide_group ='.$view_slide_group.' 
+//		ORDER BY icon_start_time ASC';
 		$voice_table_sql = 'SELECT * FROM icon_table 
-		WHERE user_id ='.$_SESSION["user_id"].' AND 
+		WHERE 
 		slide_group ='.$view_slide_group.' 
 		ORDER BY icon_start_time ASC';
 
@@ -281,20 +313,11 @@ for($i=1; $i <= $view_slide_num; $i++){
 		  </div>
 		  <div class="modal-body">
 			<div id="link_mk">
-			  <div class="input-group link_mk_div" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="公開用の視聴リンクがコピーできます。">
+			  <div class="input-group link_mk_div" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="本視聴リンクがコピーできます。">
 			  	<span class="input-group-addon">視聴リンク</span>
 				<input id="play_link" type="text" class="form-control" placeholder="スライドが登録されていません" value="">
 				<div class="input-group-btn">
 				  <button class="btn btn-default" onclick="clipboadCopy_play_link()">
-					<i class="glyphicon glyphicon-copy"></i>
-				  </button>
-				</div>
-			  </div>
-			  <div class="input-group link_mk_div" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="本編集ページのリンクがコピーできます。" style="display:none;">
-			  	<span class="input-group-addon">編集リンク</span>
-				<input id="mk_link"  type="text" class="form-control" placeholder="スライドが登録されていません" value="">
-				<div class="input-group-btn">
-				  <button class="btn btn-default" onclick="clipboadCopy_mk_link()">
 					<i class="glyphicon glyphicon-copy"></i>
 				  </button>
 				</div>
@@ -791,8 +814,6 @@ function voice_time_all_disp(voice_time_split){
 
 function link_mk(){
     $('#play_link').attr("value","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
-	//編集リンク生成
-    $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?slide_group="+slide_group+"&slide_num="+slide_num);
 }
 
 //
@@ -2094,13 +2115,6 @@ let clipboadCopy_play_link = function(){
 	document.execCommand("copy");
 }
 
-//編集リンク生成　コピー処理
-let clipboadCopy_mk_link = function(){
-	var urltext = document.getElementById("mk_link");
-	urltext.select();
-	document.execCommand("copy");
-}
-	
 $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
 });

@@ -6,7 +6,6 @@ session_start();
 include("functions.php");
 //ssidChk();//セッションチェック関数
 
-
 //入力チェック(受信確認処理追加)　ソート処理①
 if(
   !isset($_POST["slide_name"]) || $_POST["slide_name"]=="" ||
@@ -30,8 +29,11 @@ echo var_dump($slide_data_ul);
 //2. DB接続
 $pdo = db_con();//functions.phpから呼び出し
 
+//ユーザid　※presen_mkでのみ使用するパラメータとする
 //①スライド総数と最新のスライドグループを取得＋1
-	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
+//	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
+	$stmt = $pdo->prepare("SELECT * FROM slide_table  ORDER BY slide_group DESC LIMIT 1");
+
 	$status = $stmt->execute();
 	//実行後、エラーだったらfalseが返る
 

@@ -7,24 +7,67 @@ include("functions.php");
 
 //セッション関数(ユーザ情報)
 $_SESSION["user_name"] = '発表者';
-//ユーザid
+//ユーザid　※presen_mkでのみ使用するパラメータとする
 $_SESSION["user_id"] = '1' ;
 //アイコン画像名
 $_SESSION["user_icon"] = 'icon_sample.png' ;
 
-//データがないときの処理記述要？★
-
 
 //2. DB接続
 $pdo = db_con();
+
+
+//アクセスurlチェック&パラメータ初期値設定
+if(
+  !isset($_GET["slide_group"]) || $_GET["slide_group"]=="" ||
+  !isset($_GET["slide_num"]) || 
+  $_GET["slide_num"]=="" ||
+  !isset($_GET["user_id"]) || 
+  $_GET["user_id"]=="" 
+){
+  //パラメータ初期値設定(新規作成urlからアクセスした場合)
+  $view_slide_group ="なし";//スライドグループ
+  $view_slide_num  ='';//スライドの総数
+
+	//sqlのselect実行結果(件数)確認用
+	$stmt = 'SELECT COUNT(*) FROM slide_table';
+	$res = $pdo->prepare($stmt);
+	$status1 = $res->execute();
+	
+	 if ($status1) {
+	  /* SELECT 文にマッチする行数をチェック*/
+	  //なければ user_id =1のまま
+		if ($res->fetchColumn() > 0) {
+		//①最新のユーザidを取得＋1
+		$stmt = $pdo->prepare("SELECT * FROM slide_table  ORDER BY user_id DESC LIMIT 1");
+		$status2 = $stmt->execute();
+		//実行後、エラーだったらfalseが返る
+
+		//最新のuser_idを取得
+		if($status2==false){
+			queryError($stmt);
+		}else{//正常
+			while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+				$user_id         = $r["user_id"] + 1;
+				$_SESSION["user_id"] = $user_id;
+			}
+		}
+	  }
+	}
+
+}else{
+  //パラメータ初期値設定(編集用urlからアクセスした場合)
+  //GET受信
+  $view_slide_group = $_GET["slide_group"];
+  $view_slide_num   = $_GET["slide_num"];
+  $user_id   		= $_GET["user_id"];
+  $_SESSION["user_id"] = $user_id;
+}
 	
 //３．SQLを作成(スライド取得)
 
-$view_slide_group ="なし";
-$view_slide_num  ='';//スライドの総数
-
 //リロードする度新規作成画面にするため、コメントアウト。ユーザ登録ができるようになったら復活させる想定
-////①スライド総数と最新のスライドグループ(★要検討)を取得
+//①スライド総数と最新のスライドグループ(★要検討)を取得
 //	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE user_id =".$_SESSION["user_id"]." ORDER BY slide_group DESC LIMIT 1");
 //	$status = $stmt->execute();
 //	//実行後、エラーだったらfalseが返る
@@ -38,7 +81,8 @@ $view_slide_num  ='';//スライドの総数
 //			$view_slide_num      = $r["slide_num"];
 //		}
 //	}
-		
+
+
 
 $view_slide = '<div class="slider0">';//slider開始タグ
 $view_slide_id   = "なし";
@@ -362,7 +406,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 				  </button>
 				</div>
 			  </div>
-			  <div class="input-group link_mk_div" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="本編集ページのリンクがコピーできます。" style="display:none;">
+			  <div class="input-group link_mk_div" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="本編集ページのリンクがコピーできます。">
 			  	<span class="input-group-addon">編集リンク</span>
 				<input id="mk_link"  type="text" class="form-control" placeholder="スライドが登録されていません" value="">
 				<div class="input-group-btn">
@@ -452,6 +496,8 @@ for($i=1; $i <= $view_slide_num; $i++){
 	let slide_ul_num = 0;
 	//スライドデータ(DB登録用)
 	let	slide_data_ul;
+	//ユーザid
+	let user_id ='';
 	
 
 //音声データ用
@@ -486,12 +532,13 @@ $(function () {
 		let view_slide_data ='<?=$view_slide_data_copy?>';
 		let view_slide_num = '<?=$view_slide_num?>';
 		slide_group = '<?=$view_slide_group?>';
+		user_id = '<?=$_SESSION["user_id"]?>';
 		slide_num = view_slide_num;
 		
 		//初期スライドULエリア削除
 	   $('.sample_slide').remove();
 		//スライド名（お題）表示
-	   $('#slide_name').append(slide_name);
+	   $('#slide_name').html(slide_name);
 
 		//リンク生成
 		link_mk();
@@ -501,6 +548,11 @@ $(function () {
 			$('.db_slide').remove();
 		   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
 	   }
+	
+	console.log('プレゼン初期id確認');	
+	console.log('スライドグループ：',slide_group);
+	console.log('スライド数：',slide_num);
+	console.log('ユーザid：',user_id);
 
 	//2.スライダーバー(全体)設置関数---------------------- 
 	//rangeslider.js-2.3.0 を使用
@@ -829,7 +881,7 @@ function slide_ul_get(this_files){
 		}
 	}
 	
-	   $('#slide_name').append('『'+slide_name+'』');
+	   $('#slide_name').html('『'+slide_name+'』');
 
 }
 	
@@ -857,9 +909,9 @@ function slide_ul_db(){
 	$('.sample_slide').remove();
 	//リンク生成
     link_mk();
-		
 	//アイコン初期設定
 	icon_set();
+	alert('本プレゼンの編集リンク＆視聴リンクを作成しました。リンク生成ボタンからご確認ください。');
 	});
 }
 
@@ -868,11 +920,12 @@ function link_mk(){
 	//視聴リンク生成
     $('#play_link').attr("value","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
 	//編集リンク生成
-    $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?slide_group="+slide_group+"&slide_num="+slide_num);
+    $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?slide_group="+slide_group+"&slide_num="+slide_num+"&user_id="+'<?=$_SESSION["user_id"]?>');
 	
 	//視聴リンクナビゲーション表示
 	$('#presen_play_nav').show();
     $('#presen_play_nav > a').attr("href","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
+	
 }
 
 
