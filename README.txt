@@ -5,9 +5,10 @@
 ・サイトurl：
 　作成ページ
   https://real-presen.sakura.ne.jp/presen_mk.php
-  視聴ページ
+  視聴ページ（例）
   https://real-presen.sakura.ne.jp/presen_play.php?slide_group=5&slide_num=14
-
+  編集ページ（例）★NEW 2018/1/20
+  https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=5&slide_num=14&user_id=1
 
 ・DB情報：presentation_db_r5.sql 最新：2017/12/22
 
