@@ -21,7 +21,7 @@ if(
   exit('ParamError');
 }
 
-
+//■再生プレゼン読み込み■
 //1.GET受信
 $view_slide_group = $_GET["slide_group"];//スライドグループ
 $view_slide_num   = $_GET["slide_num"];//スライド数
@@ -210,6 +210,72 @@ for($i=1; $i <= $view_slide_num; $i++){
     	}
   	}
   }
+
+
+
+//■新着プレゼン5個読み込み■
+
+$slide_group_other_list = array();
+
+//7．SQLを作成(スライド取得)
+//①スライド総数と最新のスライドグループ5個取り出し
+	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_now_num = 1 ORDER BY slide_group DESC LIMIT 5");
+	$status = $stmt->execute();
+	//実行後、エラーだったらfalseが返る
+
+	//最新の取得スライドからslide_groupとslide_numを取得
+	if($status==false){
+		queryError($stmt);
+	}else{//正常
+		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+			$slide_group_other = $r["slide_group"];
+			array_push($slide_group_other_list, $slide_group_other);
+		}
+	}
+
+
+
+$view_slide_other = '<table class="table table-bordered table-hover table-condensed"><tbody>';//過去プレゼンリスト開始タグ
+
+//スライド画像ファイル名
+$slide_img_other_top ='';
+//スライド名
+$slide_name_other ='';
+//スライド作成日
+$slide_name_date ='';
+//スライド枚数
+$slide_num_other='';
+
+//②各1枚目のスライドを取得＆表示html作成	
+	for($i=0; $i < count($slide_group_other_list); $i++){
+
+		//sqlのselect実行結果(件数)確認用
+		$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_group =".$slide_group_other_list[$i]." AND slide_now_num = 1");
+		
+		$status = $stmt->execute();
+
+	//表示html作成
+	if($status==false){
+		queryError($stmt);
+	}else{//正常
+		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+			$slide_img_other_top  = $r["slide_data"];
+			$slide_name_other     = $r["slide_name"];
+			$slide_date_other      = $r["create_date"];
+			$slide_num_other      = $r["slide_num"];
+			
+			$view_slide_other .= '<tr id="slide_group='.$slide_group_other_list[$i].'&slide_num='.$slide_num_other.'" class="other_presen active" onclick="getId_otherpresen(this);">';
+			$view_slide_other .= '<td class="other_presenlist_img ">';
+			$view_slide_other .= '<img class="img-responsive img-rounded " src="upload_slide/'.$slide_img_other_top .'" alt="トップスライド"></td>';
+			$view_slide_other .='<td class="other_presenlist_title"><p class="other_presen_title">'.$slide_name_other.'</p><p class="other_presen_date">'.$slide_date_other.'</p></td></tr>';
+
+		}		
+	}
+  }
+
+  $view_slide_other .= '</tbody></table>'; //過去プレゼン終了タグ
+
 ?>
 
 <!DOCTYPE html>
@@ -281,7 +347,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 
 <div class="container">
   <div class="row">
-	<div class="col-xs-4 col-sm-3 select_div" >
+	<div class="col-xs-5 col-sm-4 select_div" >
 		<div>
 
 			<div class="icon_area">
@@ -300,7 +366,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 	  <button type="button" class="btn btn-success all_play_stop" onclick="all_play_btn();" style="display:none;"><span class="glyphicon glyphicon-pause"></span>　一時停止</button>
 	  
 	<!-- Trigger -->
-	<button id="link_mk" type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-link"></span>　プレゼンリンク</button>
+	<button id="link_mk" type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-link"></span>　リンク生成</button>
 	<!-- Modal -->
 	<div id="myModal" class="modal fade" role="dialog">
 	  <div class="modal-dialog">
@@ -309,7 +375,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 		<div class="modal-content">
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal">&times;</button>
-			<h4 class="modal-title">プレゼンリンク</h4>
+			<h4 class="modal-title">リンク生成</h4>
 		  </div>
 		  <div class="modal-body">
 			<div id="link_mk">
@@ -333,11 +399,15 @@ for($i=1; $i <= $view_slide_num; $i++){
 	  
 	</div>
 
-
-
+	<div>
+	<h3>新着プレゼン</h3>
+	<div id ="other_presen"></div>
+	<a href=""><h3>And more...</h3></a>
 	</div>
+
+</div>
 	
-	<div class="col-xs-1 col-sm-1" ></div>	
+<!--	<div class="col-xs-1 col-sm-1" ></div>	-->
    
 		
 	<div class="col-xs-7 col-sm-8" >
@@ -422,9 +492,14 @@ for($i=1; $i <= $view_slide_num; $i++){
 	//音声時間リスト(配列：1~)
 	let voice_time_split;
 	
+
 	
 //初期処理---------------------------------------
 $(function () {
+	
+	//過去プレゼン表示処理
+	let view_slide_data_other ='<?=$view_slide_other?>';
+   $('#other_presen').html(view_slide_data_other);
 	
 	//1.スライドDBデータ取得＆表示処理--------------
 	//DBのスライド有無チェック
@@ -449,7 +524,7 @@ $(function () {
 			$('.db_slide').remove();
 		   //サンプルスライド表示時はdbから取得したスライド表示タグを削除する。でないと、slider0が2つ存在することになり、スライドのカウントがおかしくなる。
 	   }
-
+	
 	//2.スライダーバー(全体)設置関数---------------------- 
 	//rangeslider.js-2.3.0 を使用
 	$('input[type="range"]').rangeslider({
@@ -547,7 +622,14 @@ $(function () {
 
 });
 
-
+//新着プレゼンリンクからの遷移
+function getId_otherpresen(ele){
+    var id_value = ele.id; // eleのプロパティとしてidを取得
+//	window.location.href = 'https://real-presen.sakura.ne.jp/presen_play.php?'+id_value; // 商用環境遷移
+	window.location.href = 'http://localhost/gs/presentation/presen_play.php?'+id_value; // 開発環境遷移
+	
+}
+	
 //スライド起動関数 （slick.jsを使用）
 function slickjs(){
 	
