@@ -251,7 +251,7 @@ tbody {
 	border-radius: 10px;
 */
     overflow-y:scroll;
-    height: 300px;
+    max-height: 200px;
 	cursor:pointer;
 
 }

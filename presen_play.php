@@ -18,10 +18,10 @@ if(
   !isset($_GET["slide_num"]) || 
   $_GET["slide_num"]=="" 
 ){
-  exit('ParamError');
+  exit('ParamError：プレゼンurlが間違っています');
 }
 
-//■再生プレゼン読み込み■
+//■再生プレゼン読あみ込み■
 //1.GET受信
 $view_slide_group = $_GET["slide_group"];//スライドグループ
 $view_slide_num   = $_GET["slide_num"];//スライド数
@@ -43,15 +43,6 @@ $file_dir_path = "upload_slide/";  //画像ファイル保管先
 
 //②スライドを一枚ずつ取得＆表示html作成	
 	for($i=1; $i <= $view_slide_num; $i++){
-
-		//sqlのselect実行結果(件数)確認用
-//		$stmt = $pdo->prepare("SELECT * FROM slide_table 
-//			WHERE user_id =".$_SESSION["user_id"]." AND 
-//			slide_group =".$view_slide_group." AND 
-//			slide_num =".$view_slide_num." AND 
-//			slide_now_num =".$i." 
-//			ORDER BY slide_id DESC LIMIT 1");
-		
 		$stmt = $pdo->prepare("SELECT * FROM slide_table 
 			WHERE 
 			slide_group =".$view_slide_group." AND 
@@ -89,13 +80,6 @@ $file_dir_path = "upload_slide/";  //画像ファイル保管先
 	$voice_file_dir_path = "upload_voice/";  //画像ファイル保管先
 
 for($i=1; $i <= $view_slide_num; $i++){
-		
-		//sqlのselect実行結果(件数)確認用
-//		$sql = 'SELECT COUNT(*) FROM voice_table 
-//		WHERE user_id ='.$_SESSION["user_id"].' AND 
-//		slide_group ='.$view_slide_group.' AND 
-//		slide_now_num ='.$i;
-	
 		$sql = 'SELECT COUNT(*) FROM voice_table 
 		WHERE 
 		slide_group ='.$view_slide_group.' AND 
@@ -104,11 +88,6 @@ for($i=1; $i <= $view_slide_num; $i++){
 		$res = $pdo->prepare($sql);
 		$status1 = $res->execute();
 		
-		//sqlのselect実行文(最新の音声を取得)
-//		$voice_table_sql = 'SELECT * FROM voice_table WHERE user_id ='.$_SESSION["user_id"].' AND 
-//		slide_group ='.$view_slide_group.' AND 
-//		slide_now_num ='.$i.' 
-//		ORDER BY voice_id DESC LIMIT 1';
 		$voice_table_sql = 'SELECT * FROM voice_table WHERE 
 		slide_group ='.$view_slide_group.' AND 
 		slide_now_num ='.$i.' 
@@ -159,10 +138,6 @@ for($i=1; $i <= $view_slide_num; $i++){
 }
 
 //6．SQLを作成(アイコン取得)＆アイコンリスト作成
-		//sqlのselect実行結果(件数)確認用
-//		$sql = 'SELECT COUNT(*) FROM icon_table 
-//		WHERE user_id ='.$_SESSION["user_id"].' AND 
-//		slide_group ='.$view_slide_group;
 		$sql = 'SELECT COUNT(*) FROM icon_table 
 		WHERE 
 		slide_group ='.$view_slide_group;
@@ -216,65 +191,103 @@ for($i=1; $i <= $view_slide_num; $i++){
 //■新着プレゼン5個読み込み■
 
 $slide_group_other_list = array();
+$view_slide_other = '新着プレゼンなし';
 
 //7．SQLを作成(スライド取得)
 //①スライド総数と最新のスライドグループ5個取り出し
-	$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_now_num = 1 ORDER BY slide_group DESC LIMIT 5");
-	$status = $stmt->execute();
-	//実行後、エラーだったらfalseが返る
+//①-1該当プレゼンが5つあるかチェック
 
-	//最新の取得スライドからslide_groupとslide_numを取得
-	if($status==false){
-		queryError($stmt);
-	}else{//正常
-		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-			$slide_group_other = $r["slide_group"];
-			array_push($slide_group_other_list, $slide_group_other);
+$sql = 'SELECT COUNT(*) FROM slide_table 
+WHERE slide_now_num = 1';
+
+$res = $pdo->prepare($sql);
+$status1 = $res->execute();
+
+
+ if ($status1) {
+	 //プレゼン数
+	$other_presen_num = $res->fetchColumn();
+
+	//DBに該当する音声があるかどうかチェック
+	/* SELECT 文にマッチする行数をチェック*/
+	if ($other_presen_num == 0) {
+
+		//新着プレゼン0の場合、処理なし
+
+	}else{
+
+		//新着プレゼンが存在する場合
+		if($other_presen_num > 5 ){
+			$other_presen_num = 5;
 		}
-	}
-
-
-
-$view_slide_other = '<table class="table table-bordered table-hover table-condensed"><tbody>';//過去プレゼンリスト開始タグ
-
-//スライド画像ファイル名
-$slide_img_other_top ='';
-//スライド名
-$slide_name_other ='';
-//スライド作成日
-$slide_name_date ='';
-//スライド枚数
-$slide_num_other='';
-
-//②各1枚目のスライドを取得＆表示html作成	
-	for($i=0; $i < count($slide_group_other_list); $i++){
-
-		//sqlのselect実行結果(件数)確認用
-		$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_group =".$slide_group_other_list[$i]." AND slide_now_num = 1");
 		
-		$status = $stmt->execute();
+		//②該当スライドを取得
+		$sql2 = 'SELECT * FROM slide_table WHERE slide_now_num = 1 ORDER BY slide_group DESC LIMIT '.$other_presen_num;
 
-	//表示html作成
-	if($status==false){
-		queryError($stmt);
-	}else{//正常
-		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+		$stmt = $pdo->prepare($sql2);
+		$status2 = $stmt->execute();
+		//実行後、エラーだったらfalseが返る
 
-			$slide_img_other_top  = $r["slide_data"];
-			$slide_name_other     = $r["slide_name"];
-			$slide_date_other      = $r["create_date"];
-			$slide_num_other      = $r["slide_num"];
-			
-			$view_slide_other .= '<tr id="slide_group='.$slide_group_other_list[$i].'&slide_num='.$slide_num_other.'" class="other_presen active" onclick="getId_otherpresen(this);">';
-			$view_slide_other .= '<td class="other_presenlist_img ">';
-			$view_slide_other .= '<img class="img-responsive img-rounded " src="upload_slide/'.$slide_img_other_top .'" alt="トップスライド"></td>';
-			$view_slide_other .='<td class="other_presenlist_title"><p class="other_presen_title">'.$slide_name_other.'</p><p class="other_presen_date">'.$slide_date_other.'</p></td></tr>';
+		//最新の取得スライドからslide_groupとslide_numを取得
+		if($status2 == false){
+			queryError($stmt);
+		}else{//正常
+			while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+				$slide_group_other = $r["slide_group"];
+				array_push($slide_group_other_list, $slide_group_other);
+			}
+		}
 
-		}		
+
+
+	$view_slide_other = '<table class="table table-bordered table-hover table-condensed"><tbody>';//過去プレゼンリスト開始タグ
+
+	//スライド画像ファイル名
+	$slide_img_other_top ='';
+	//スライド名
+	$slide_name_other ='';
+	//スライド作成日
+	$slide_name_date ='';
+	//スライド枚数
+	$slide_num_other='';
+
+	//③各1枚目のスライドを取得＆表示html作成	
+		for($i=0; $i < count($slide_group_other_list); $i++){
+
+			//sqlのselect実行結果(件数)確認用
+			$stmt = $pdo->prepare("SELECT * FROM slide_table WHERE slide_group =".$slide_group_other_list[$i]." AND slide_now_num = 1");
+
+			$status = $stmt->execute();
+
+		//表示html作成
+		if($status==false){
+			queryError($stmt);
+		}else{//正常
+			while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+				$slide_img_other_top  = $r["slide_data"];
+				$slide_name_other     = $r["slide_name"];
+				$slide_date_other      = $r["create_date"];
+				$slide_num_other      = $r["slide_num"];
+
+				$view_slide_other .= '<tr id="slide_group='.$slide_group_other_list[$i].'&slide_num='.$slide_num_other.'" class="other_presen active" onclick="getId_otherpresen(this);">';
+				$view_slide_other .= '<td class="other_presenlist_img ">';
+				$view_slide_other .= '<img class="img-responsive img-rounded " src="upload_slide/'.$slide_img_other_top .'" alt="トップスライド"></td>';
+				$view_slide_other .='<td class="other_presenlist_title"><p class="other_presen_title">'.$slide_name_other.'</p><p class="other_presen_date">'.$slide_date_other.'</p></td></tr>';
+
+			}
+		}
+	  }
+
+	  $view_slide_other .= '</tbody></table>'; //過去プレゼン終了タグ
 	}
-  }
 
-  $view_slide_other .= '</tbody></table>'; //過去プレゼン終了タグ
+}else{//$status1エラー
+			queryError($res);
+}
+
+	  
+
 
 ?>
 
@@ -426,7 +439,7 @@ $slide_num_other='';
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
-			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.001"  data-rangeslider>
+			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.1"  data-rangeslider>
 			<output style="display:none;"></output>
 			<div id="time_area" style="margin-top:10px;">
 			</div>
@@ -625,8 +638,9 @@ $(function () {
 //新着プレゼンリンクからの遷移
 function getId_otherpresen(ele){
     var id_value = ele.id; // eleのプロパティとしてidを取得
-//	window.location.href = 'https://real-presen.sakura.ne.jp/presen_play.php?'+id_value; // 商用環境遷移
-	window.location.href = 'http://localhost/gs/presentation/presen_play.php?'+id_value; // 開発環境遷移
+	window.location.href = 'https://real-presen.sakura.ne.jp/presen_play.php?'+id_value; // 商用環境遷移
+	
+//	window.location.href = 'http://localhost/gs/presentation/presen_play.php?'+id_value; // 開発環境遷移
 	
 }
 	
@@ -716,183 +730,7 @@ function voice_time_all_disp(voice_time_split){
 }
 	
 
-//①ファイル初期UL押下時-------------
-//
-//$('#upfile').change(function(){
-//
-//	//1)スライドUL取得処理
-//	slide_ul_get(this.files);
-//
-//	//2)DB登録処理(ajax)
-//	slide_ul_db();
-//	
-//});
-//
-////スライドファイル名ソート処理
-//function associative_sort(a){
-//  var x=[],b={};
-//  for(key in a){
-//    x.push([key,a[key]]);
-//  }
-//	let splice_num = x.length-2;
-//	console.log('splice_num',splice_num);
-//	
-//		x.splice(x.length-2, 2);
-//		console.log('x',x);
-//
-//  x.sort((a, b) => {
-//	  const a1 = parseInt(a[1].name.replace(/[^0-9]/g, ''), 10);
-//	  const b1 = parseInt(b[1].name.replace(/[^0-9]/g, ''), 10);
-//	  const a2 = (a1 !== a1) ? 0 : a1;
-//	  const b2 = (b1 !== b1) ? 0 : b1;
-//
-//	  if (a2 > b2) {
-//		  return 1;
-//	  } else if (a2 < b2) {
-//		  return -1;
-//	  }
-//	  return 0;
-//	});
-//
-//
-//  for(i=0;i<x.length;i++){
-//    b[i]=x[i][1];
-//  }
-////	console.log('b',b);	
-//  return b;
-//}
-//
-//
-////1)スライドUL-取得処理
-//function slide_ul_get(this_files){
-//
-//	//前スライド削除
-//	$('.slider'+slide_ul_num).remove();
-//	
-//	slide_ul_num++;
-////	console.log('スライドULチェック',slide_ul_num);//全く同じファイルを連続ULするとカウントされない。
-//	
-//	//スライドデータ(DB登録用)
-//	console.log('this_files',this_files);
-//	
-//	let this_files_sorted = associative_sort(this_files);
-//	
-//	console.log('this_files_sorted',this_files_sorted);
-//
-////	for (let i = 0; i < this_files.length; i++) {
-////		
-////		this_files[i] = this_files_sorted[i];//失敗する★★
-////	}
-////	console.log('this_files2',this_files);
-////	slide_data_ul = this_files_sorted;
-//	
-//	//スライドデータ(html表示用)
-//	let slide_data ='';
-//	
-//	//ULするスライドの枚数
-//	let new_slide_num = this_files.length -1;
-//	
-//	//スライド全体
-//	let slider_add = '';
-//	slider_add += '<div class="slider'+slide_ul_num+'">';
-//	
-//	//スライダー(全体)更新処理
-//	voice_time_split = [];
-//	voice_time = '';
-//	for(let i =0;i <= new_slide_num;i++){
-//		voice_time += default_audio_time+'/';
-//	}
-//	
-//	//音声リスト作成
-//	voice_time_split_mk(voice_time);
-//	//音声総時間の表示
-//	voice_time_all_disp(voice_time_split);
-//	//スライダー更新
-//	$('input[type="range"]').rangeslider('update', true);
-//	
-//	//ソート済スライド番号情報生成
-//	slide_data_ul = '';
-//	//ULされたスライドのhtmlを作成
-//	for (let i = 0; i < this_files.length; i++) {
-//
-//		//ソート済ファイル番号
-//		let sorted_num;
-//		for (let x = 0; x < this_files.length; x++) {
-//			if(this_files[x].name == this_files_sorted[i].name){
-//				sorted_num = x;
-//				slide_data_ul += x + '/'; 
-//			}
-//		}
-//		
-//		// 選択されたファイル情報を取得
-//		let file = this_files[sorted_num];
-//
-//		//アップロードされたファイル名からスライド名を取得
-//		slide_name = file['webkitRelativePath'].split('/')[0];
-//
-//		// readerのresultプロパティに、データURLとしてエンコードされたファイルデータを格納
-//		let reader = new FileReader();
-//		reader.readAsDataURL(file);
-//		reader.onload = function() {
-//			let slide_disp_num = i+1;
-//
-//			//何枚でもアップロードできるように変更
-//			//スライド追加
-//			slide_data += reader.result+"/";	
-//			let slide_add = '';		
-//			slide_add += '<div id="slide'+ slide_disp_num+'">';
-//			slide_add += '<img src="'+reader.result+'" class="img-responsive img-rounded slide slide_img_'+slide_disp_num+'" alt="ULスライド'+slide_disp_num+'枚目" >';
-//			slide_add += '</div>'; 
-//			slider_add += slide_add;
-//
-//			//スライドがすべてULされたときの処理
-//			if(i == new_slide_num){
-//				//新しいsliderタグの挿入
-//				slider_add += '</div>';//slider終了タグ
-//				$(".slide_area").prepend(slider_add);
-////				//前回の音声削除
-////				$("#recordingslist>div").remove();
-//
-//				//新しいスライド起動 
-//				slickjs();
-//
-//			}
-//		}
-//	}
-//	
-//	   $('#slide_name').append('『'+slide_name+'』');
-//
-//}
-//	
-////2)スライド初期UL-DB登録処理(ajax)
-//function slide_ul_db(){
-//	
-//	let fd = new FormData($('#upfile_form').get(0));
-//	//$postで確認
-//	fd.append('slide_name', slide_name);
-//	fd.append('slide_data_ul', slide_data_ul);
-//
-//	
-//	$.ajax({
-//		type: 'POST',
-//		url: 'slide_insert.php',
-//		data: fd,
-//		processData: false,
-//		contentType: false
-//	}).done(function(data) {
-//       console.log(data);
-//	slide_group = data.split('/')[1];
-//	console.log('スライド登録処理終了');
-//	console.log('slide_group:',slide_group);
-//	//初回スライドULフォーム削除
-//	$('.sample_slide').remove();
-//	//リンク生成
-//    link_mk();
-//		
-//	//アイコン初期設定
-//	icon_set();
-//	});
-//}
+
 
 function link_mk(){
     $('#play_link').attr("value","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);

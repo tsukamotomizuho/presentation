@@ -26,6 +26,8 @@ $slide_data_ul = explode("/", $slide_data_ul);
 array_pop($slide_data_ul);
 echo var_dump($slide_data_ul);
 
+$slide_group = 0;
+
 //2. DB接続
 $pdo = db_con();//functions.phpから呼び出し
 
