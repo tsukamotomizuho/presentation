@@ -1,13 +1,13 @@
 # presentation
-最新リビジョン：r59
+最新リビジョン：r60
 
-・環境(サーバ)：さくらサーバ 　★NEW：2018/1/27 11:30
+・環境(サーバ)：さくらサーバ 　★NEW：2018/1/29 21:40
 ・サイトurl：
 　作成ページ
   https://real-presen.sakura.ne.jp/presen_mk.php
   視聴ページ（例）
   https://real-presen.sakura.ne.jp/presen_play.php?slide_group=5&slide_num=14
-  編集ページ（例）★NEW 2018/1/20
+  編集ページ（例）
   https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=5&slide_num=14&user_id=1
 
 ・DB情報：presentation_db_r5.sql 最新：2017/12/22
@@ -29,7 +29,7 @@
 ・user_idをパラメータに追加【済】
 　mkの編集(use_id作成【済】、urlから受信【済】、リンク作成【済】）
 　insertの編集(user_id処理削除【済】)
-　play(user_idをsqlから削除【済】）★要テスト★
+　play(user_idをsqlから削除【済】
 ・リンク作成時にアラーム『リンクを作成しました。お手元にコピーして・・・』【済】
 
 
@@ -38,18 +38,18 @@
 ・初期処理(過去プレゼンが4以下のとき)【済】
 ・遷移先を商用環境に変更【済】
 ⇒getId_otherpresen(ele)
-・さくらサーバアップ
+・さくらサーバアップ【済】
 
+3.twitter拡散機能【済】
+
+
+4.微調整
 ・バグ？：iconlistの秒数が小数点第一位で四捨五入できていない★ここから★
 　　　　　音声リストが小数点切捨てになっている
 ・バグ：音声20sの後のスライド再生に妙な時間差？
 ・プレゼン削除機能追加
 ・And more...のリンク先
 
-
-3.twitter拡散機能
-
-4.微調整
 ・初期ボタン非表示
 ・リンク作成時にEメールでurl送信機能
 ・ナビ：新規作成押下時に確認(新しいプレゼンを作成画面に遷移しますがよろしいですか？)

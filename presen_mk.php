@@ -423,12 +423,12 @@ for($i=1; $i <= $view_slide_num; $i++){
 		  </div>
 		</div>
 	  </div>
-	  
 	</div>
 
+	<!--tweetボタン-->
+	<div id="twbtn"></div>
 
-
-	</div>
+  </div>
 	
 	<div class="col-xs-1 col-sm-1" ></div>	
    
@@ -925,10 +925,23 @@ function link_mk(){
 	//視聴リンクナビゲーション表示
 	$('#presen_play_nav').show();
     $('#presen_play_nav > a').attr("href","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
-	
+
+	//tweetボタン生成
+	tweet_mk();
 }
 
+//tweetボタン生成
+function tweet_mk(){
 
+	//tweetボタン表示
+	let tw_html = '<a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-text="真・プレゼン共有｜オススメのプレゼン：'+slide_name+'　URL：" data-url="https://real-presen.sakura.ne.jp/presen_play.php?slide_group='+slide_group+'&slide_num='+slide_num+'">Tweet</a>';
+	
+	$('#twbtn').prepend(tw_html);
+	
+	!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+}
+
+	
 //②スライド変更-------------------------------------
 function slide_update(){
 //	$('#rec ,#rec_stop').prop("disabled", false);
