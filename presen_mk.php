@@ -290,7 +290,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</div>
     <ul class="nav navbar-nav navbar-right">
       <li class="active"><a href="https://real-presen.sakura.ne.jp/presen_mk.php">プレゼン新規作成</a></li>
-      <li id="presen_play_nav" style="display:none;"><a href="#">プレゼン視聴</a></li>
+      <li id="presen_play_nav"><a href="https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=39&slide_num=52&user_id=35">プレゼン視聴</a></li>
     </ul>
   </div>
 </nav>
@@ -926,9 +926,9 @@ function link_mk(){
 	//編集リンク生成
     $('#mk_link').attr("value","https://real-presen.sakura.ne.jp/presen_mk.php?slide_group="+slide_group+"&slide_num="+slide_num+"&user_id="+'<?=$_SESSION["user_id"]?>');
 	
-	//視聴リンクナビゲーション表示
-	$('#presen_play_nav').show();
-    $('#presen_play_nav > a').attr("href","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
+//	//視聴リンクナビゲーション表示
+//	$('#presen_play_nav').show();
+//    $('#presen_play_nav > a').attr("href","https://real-presen.sakura.ne.jp/presen_play.php?slide_group="+slide_group+"&slide_num="+slide_num);
 
 	//tweetボタン生成
 	tweet_mk();

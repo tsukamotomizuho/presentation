@@ -350,7 +350,7 @@ $status1 = $res->execute();
 	</div>
     <ul class="nav navbar-nav navbar-right">
       <li><a href="https://real-presen.sakura.ne.jp/presen_mk.php">プレゼン新規作成</a></li>
-      <li class="active"><a href="#">プレゼン視聴</a></li>
+      <li class="active"><a href="https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=39&slide_num=52&user_id=35">プレゼン視聴</a></li>
     </ul>
   </div>
 </nav>
