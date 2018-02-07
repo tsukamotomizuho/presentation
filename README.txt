@@ -6,7 +6,7 @@
 　作成ページ
   https://real-presen.sakura.ne.jp/presen_mk.php
   視聴ページ（例）
-  https://real-presen.sakura.ne.jp/presen_play.php?slide_group=5&slide_num=14
+  https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=39&slide_num=52&user_id=35
   編集ページ（例）
   https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=5&slide_num=14&user_id=1
 
@@ -56,7 +56,12 @@
 ・リンク生成処理修正【済】
 ⇒スライドUL時のslide_num = slide_new_num + 1;
 
-・バグ？：iconlistの秒数が小数点第一位で四捨五入できていない★ここから★
+・デモページ(gga)登録
+⇒視聴リンク修正
+https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=39&slide_num=52&user_id=35
+
+
+・バグ？：iconlistの秒数が小数点第一位で四捨五入できていない
 　　　　　音声リストが小数点切捨てになっている
 ・バグ：音声20sの後のスライド再生に妙な時間差？
 ・プレゼン削除機能追加
