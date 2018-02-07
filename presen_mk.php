@@ -449,7 +449,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
-			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.1"  data-rangeslider>
+			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.01"  data-rangeslider>
 			<output style="display:none;"></output>
 			<div id="time_area" style="margin-top:10px;">
 			</div>
@@ -854,9 +854,11 @@ function slide_ul_get(this_files){
 		// readerのresultプロパティに、データURLとしてエンコードされたファイルデータを格納
 		let reader = new FileReader();
 		reader.readAsDataURL(file);
+
 		reader.onload = function() {
 			let slide_disp_num = i+1;
-
+			console.log('slide_disp_num：',slide_disp_num);
+			
 			//何枚でもアップロードできるように変更
 			//スライド追加
 			slide_data += reader.result+"/";	
@@ -876,6 +878,8 @@ function slide_ul_get(this_files){
 
 				//新しいスライド起動 
 				slickjs();
+				
+				slide_num = new_slide_num+1;
 
 			}
 		}
@@ -1222,7 +1226,7 @@ function stopRecording(button) {
 	audio.addEventListener('loadedmetadata',function(e) {
 		// 音声時間の取得
 		let voice_time = audio.duration*1000;
-		voice_time = Math.round(voice_time*10)/10;
+		voice_time = Math.round(voice_time*100)/100;
 		console.log('時間(ms)：',voice_time); 
 		voice_ul(blob,voice_time);//音声アップロード
 

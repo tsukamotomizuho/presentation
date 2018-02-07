@@ -21,13 +21,13 @@ if(
   exit('ParamError：プレゼンurlが間違っています');
 }
 
-//■再生プレゼン読あみ込み■
+//■再生プレゼン読み込み■
 //1.GET受信
 $view_slide_group = $_GET["slide_group"];//スライドグループ
 $view_slide_num   = $_GET["slide_num"];//スライド数
 
-//echo 'スライドグループ：$slide_group='.$slide_group;
-//echo '/　スライド数：$slide_num='.$slide_num;
+//echo 'スライドグループ：$slide_group='.$view_slide_group;
+//echo '/　スライド数：$slide_num='.$view_slide_num;
 
 //2. DB接続
 $pdo = db_con();
@@ -50,6 +50,13 @@ $file_dir_path = "upload_slide/";  //画像ファイル保管先
 			slide_now_num =".$i." 
 			ORDER BY slide_id DESC LIMIT 1");
 		$status = $stmt->execute();
+
+//	echo '/　$stm='."SELECT * FROM slide_table 
+//			WHERE 
+//			slide_group =".$view_slide_group." AND 
+//			slide_num =".$view_slide_num." AND 
+//			slide_now_num =".$i." 
+//			ORDER BY slide_id DESC LIMIT 1";
 
 	//表示html作成
 	if($status==false){
@@ -444,7 +451,7 @@ $status1 = $res->execute();
 			<div class="db_slide" ><?=$view_slide?></div>
 		</div>
 		<div class="slidebar_area">
-			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.1"  data-rangeslider>
+			<input id="rangeslider" type="range" min="0" max="100" value="0" step="0.01"  data-rangeslider>
 			<output style="display:none;"></output>
 			<div id="time_area" style="margin-top:10px;">
 			</div>
