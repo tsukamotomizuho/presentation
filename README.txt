@@ -6,7 +6,7 @@
 　作成ページ
   https://real-presen.sakura.ne.jp/presen_mk.php
   視聴ページ（例）
-  https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=39&slide_num=52&user_id=35
+  https://real-presen.sakura.ne.jp/presen_play.php?slide_group=39&slide_num=52
   編集ページ（例）
   https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=5&slide_num=14&user_id=1
 
