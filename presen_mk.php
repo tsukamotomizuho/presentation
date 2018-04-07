@@ -290,7 +290,7 @@ for($i=1; $i <= $view_slide_num; $i++){
 	</div>
     <ul class="nav navbar-nav navbar-right">
       <li class="active"><a href="https://real-presen.sakura.ne.jp/presen_mk.php">プレゼン新規作成</a></li>
-      <li class="active" id="presen_play_nav"><a href="https://real-presen.sakura.ne.jp/presen_mk.php?slide_group=39&slide_num=52">プレゼン視聴</a></li>
+      <li class="active" id="presen_play_nav"><a href="https://real-presen.sakura.ne.jp/presen_play.php?slide_group=39&slide_num=52">プレゼン視聴</a></li>
     </ul>
   </div>
 </nav>
